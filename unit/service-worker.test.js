@@ -8,9 +8,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SERVICE_WORKER_SOURCE = fs.readFileSync(path.join(ROOT, "public", "sw.js"), "utf8");
 const ORIGIN = "https://portfolio.test";
-const SCOPE = `${ORIGIN}/Togs-heads-up/`;
+const SCOPE = `${ORIGIN}/togs-heads-up/`;
 const INDEX_URL = `${SCOPE}index.html`;
-const CACHE_NAME = "togs-heads-up-v12";
+const CACHE_NAME = "togs-heads-up-v13";
 
 function requestUrl(request) {
   return typeof request === "string" ? request : request.url;
@@ -172,7 +172,9 @@ function productionRoutes() {
 
 test("install precaches index and every scoped JS/CSS asset before taking control", async () => {
   const harness = createHarness(productionRoutes());
+  harness.seedCache("togs-heads-up-v10");
   harness.seedCache("togs-heads-up-v11");
+  harness.seedCache("togs-heads-up-v12");
   harness.seedCache("another-app-v3");
 
   await harness.dispatchExtendable("install");
@@ -191,13 +193,14 @@ test("install precaches index and every scoped JS/CSS asset before taking contro
   assert.equal(harness.networkCalls.find(({ url }) => url === INDEX_URL).options.cache, "no-store");
   assert.equal(harness.timeline.at(-1), "skipWaiting");
   assert.ok(harness.timeline.slice(0, -1).every((entry) => entry.startsWith("put:")));
-  assert.ok(harness.cacheStores.has("togs-heads-up-v11"), "v11 remains until v12 activates");
-  assert.deepEqual(harness.deletedCaches, [], "install must not remove the active v11 cache");
+  assert.ok(harness.cacheStores.has("togs-heads-up-v12"), "legacy-scope v12 remains during install");
+  assert.deepEqual(harness.deletedCaches, [], "install must not remove any active cache");
 
   await harness.dispatchExtendable("activate");
 
-  assert.deepEqual(harness.deletedCaches, ["togs-heads-up-v11"]);
+  assert.deepEqual(harness.deletedCaches, ["togs-heads-up-v10", "togs-heads-up-v11"]);
   assert.ok(harness.cacheStores.has(CACHE_NAME));
+  assert.ok(harness.cacheStores.has("togs-heads-up-v12"), "activation preserves the old uppercase-scope shell");
   assert.ok(harness.cacheStores.has("another-app-v3"));
   assert.equal(harness.timeline.at(-1), "clients.claim");
 });
@@ -206,11 +209,11 @@ test("a failed hashed asset prevents activation and preserves the previous cache
   const routes = productionRoutes();
   routes.set(`${SCOPE}assets/index-f7g8h9.js`, new Response("unavailable", { status: 503 }));
   const harness = createHarness(routes);
-  harness.seedCache("togs-heads-up-v11", [[INDEX_URL, new Response("old offline shell")]]);
+  harness.seedCache("togs-heads-up-v12", [[INDEX_URL, new Response("old offline shell")]]);
 
   await assert.rejects(harness.dispatchExtendable("install"), /Failed to cache.*HTTP 503/);
 
-  assert.ok(harness.cacheStores.has("togs-heads-up-v11"));
+  assert.ok(harness.cacheStores.has("togs-heads-up-v12"));
   assert.ok(!harness.timeline.includes("skipWaiting"));
   assert.deepEqual(harness.deletedCaches, []);
 });
