@@ -22,7 +22,8 @@ const JPL_SSD_BASE_URL = "https://ssd-api.jpl.nasa.gov";
 // falhar, exibimos o ultimo valor bom enquanto ele nao estiver muito velho.
 // A versao do prefixo invalida caches antigos quando o formato ou o parsing
 // muda (ex.: XML do CPTEC salvo com acentos quebrados na v1).
-const CACHE_PREFIX = "togs-cache:v3:";
+const CACHE_NAMESPACE = "togs-cache:";
+const CACHE_PREFIX = `${CACHE_NAMESPACE}v4:`;
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
@@ -96,6 +97,37 @@ function readCacheEntry(storage, key) {
     return parsed;
   } catch {
     return null;
+  }
+}
+
+function pruneDashboardCache(storage) {
+  if (!storage || typeof storage.key !== "function" || typeof storage.removeItem !== "function") return;
+
+  try {
+    const storageLength = storage.length;
+    if (typeof storageLength !== "number") return;
+
+    for (let index = storageLength - 1; index >= 0; index -= 1) {
+      const key = storage.key(index);
+      if (!key?.startsWith(CACHE_NAMESPACE)) continue;
+
+      if (!key.startsWith(CACHE_PREFIX)) {
+        storage.removeItem(key);
+        continue;
+      }
+
+      try {
+        const entry = JSON.parse(storage.getItem(key));
+        const ageMs = Date.now() - Number(entry?.storedAt);
+        if (!Number.isFinite(ageMs) || ageMs < 0 || ageMs >= CACHE_STALE_MAX_MS) storage.removeItem(key);
+      } catch {
+        // Uma entrada corrompida nao deve interromper a limpeza das demais.
+        storage.removeItem(key);
+      }
+    }
+  } catch {
+    // localStorage pode ficar indisponivel por politica do navegador. Limpeza
+    // de cache e best-effort e nunca deve impedir as consultas do dashboard.
   }
 }
 
@@ -689,6 +721,7 @@ export async function fetchEarthSpaceDashboard({
 } = {}) {
   if (typeof fetchImpl !== "function") throw new Error("Fetch API indisponível neste ambiente.");
 
+  pruneDashboardCache(storage);
   const options = { fetchImpl, signal, timeoutMs, corsProxy: getCorsProxy(env) };
   const locationScope = `${location.latitude},${location.longitude}`;
   const storesPreciseLocation = String(location.id).startsWith("geo-");

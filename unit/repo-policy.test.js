@@ -11,6 +11,13 @@ function read(file) {
   return fs.readFileSync(path.join(root, file), "utf8");
 }
 
+function listFiles(directory) {
+  return fs.readdirSync(path.join(root, directory), { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = path.join(directory, entry.name);
+    return entry.isDirectory() ? listFiles(relativePath) : [relativePath];
+  });
+}
+
 test("workflow kit files exist", () => {
   for (const file of ["AGENTS.md", "CLAUDE.md", "PROJECT_CONTEXT.md", "test.cmd", "package.json", ".gitignore"]) {
     assert.ok(fs.existsSync(path.join(root, file)), `${file} should exist`);
@@ -72,6 +79,42 @@ test("project context records stack decision", () => {
   assert.match(context, /Revisao Obrigatoria De Stack/);
 });
 
+test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () => {
+  const status = read(".lgpd/STATUS.md");
+  const policy = read(".lgpd/policies/privacy-policy-v1.0-draft.md");
+  const lgpdFiles = listFiles(".lgpd");
+  const publicFiles = listFiles("public");
+
+  assert.match(status, /- \[x\] L9 — Política de privacidade \(draft; não publicada\)/);
+  assert.match(status, /- \[ \] L10 — ECA Digital/);
+  assert.match(status, /Não publicar nem iniciar L10 sem aprovação explícita/);
+  assert.match(policy, /não vigente/i);
+  assert.ok(!lgpdFiles.some((file) => /eca-digital|minor/i.test(file)), "L10 must not have generated artifacts");
+  assert.ok(!publicFiles.some((file) => /draft|privacy-policy|politica.*privacidade/i.test(file)));
+  for (const file of publicFiles) {
+    assert.doesNotMatch(read(file), /v1\.0-draft|não vigente/i, `${file} must not publish draft content`);
+  }
+});
+
+test("cache versions v4 and v12 stay coherent between code and LGPD drafts", () => {
+  const api = read("src/services/earthSpaceApi.js");
+  const serviceWorker = read("public/sw.js");
+  const versionedDrafts = [
+    ".lgpd/data-map.md",
+    ".lgpd/retention.md",
+    ".lgpd/policies/privacy-policy-v1.0-draft.md",
+  ];
+
+  assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v4:`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
+  for (const file of versionedDrafts) {
+    const content = read(file);
+    assert.match(content, /togs-cache:v4:/, `${file} must document localStorage v4`);
+    assert.match(content, /togs-heads-up-v12/, `${file} must document Cache Storage v12`);
+    assert.doesNotMatch(content, /togs-cache:v3:|togs-heads-up-v11/, `${file} must not document stale versions`);
+  }
+});
+
 test("github pages deployment builds vite output for repository subpath", () => {
   const viteConfig = read("vite.config.js");
   const index = read("index.html");
@@ -87,7 +130,7 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v11`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);
   assert.match(serviceWorker, /text\/xml/);
