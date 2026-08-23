@@ -1,22 +1,53 @@
-const CACHE_NAME = "togs-heads-up-v10";
+const CACHE_PREFIX = "togs-heads-up-";
+const CACHE_NAME = `${CACHE_PREFIX}v11`;
 const toScopeUrl = (path) => new URL(path, self.registration.scope).toString();
 const INDEX_URL = toScopeUrl("index.html");
-const APP_SHELL = ["./", "index.html", "manifest.webmanifest", "icon.svg"].map(toScopeUrl);
+const STATIC_APP_SHELL = ["./", "manifest.webmanifest", "icon.svg"].map(toScopeUrl);
+
+function getIndexAssetUrls(indexHtml) {
+  const assetUrls = new Set();
+  const attributePattern = /<(?:script|link)\b[^>]*(?:src|href)=["']([^"']+)["'][^>]*>/gi;
+
+  for (const match of indexHtml.matchAll(attributePattern)) {
+    const assetUrl = new URL(match[1], INDEX_URL);
+    const isScopedAsset = assetUrl.origin === self.location.origin && assetUrl.href.startsWith(self.registration.scope);
+    if (isScopedAsset && /\.(?:css|js)(?:\?|$)/i.test(assetUrl.href)) {
+      assetUrls.add(assetUrl.toString());
+    }
+  }
+
+  return [...assetUrls];
+}
+
+async function precacheAppShell() {
+  const indexResponse = await fetch(INDEX_URL, { cache: "no-store" });
+  if (!indexResponse.ok) {
+    throw new Error(`Unable to precache index.html: HTTP ${indexResponse.status}`);
+  }
+
+  const indexHtml = await indexResponse.clone().text();
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all([
+    cache.put(INDEX_URL, indexResponse),
+    cache.addAll([...STATIC_APP_SHELL, ...getIndexAssetUrls(indexHtml)]),
+  ]);
+}
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting()),
-  );
+  event.waitUntil(precacheAppShell().then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      )
       .then(() => self.clients.claim()),
   );
 });

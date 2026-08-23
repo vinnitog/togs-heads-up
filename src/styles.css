@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    Aptos, "Segoe UI Variable", "Trebuchet MS", ui-sans-serif, sans-serif;
   --bg: #eef2f5;
   --surface: #ffffff;
   --surface-muted: #f7f9fc;
@@ -21,7 +21,8 @@
   --rose-soft: #fee2e2;
   --violet: #6d28d9;
   --violet-soft: #ede9fe;
-  --shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+  --shadow: 0 14px 36px rgba(16, 24, 40, 0.09);
+  --shadow-soft: 0 6px 18px rgba(16, 24, 40, 0.07);
 }
 
 * {
@@ -30,6 +31,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-color: var(--border-strong) var(--bg);
 }
 
 body {
@@ -37,6 +39,12 @@ body {
   min-width: 320px;
   background: var(--bg);
   color: var(--ink);
+  caret-color: var(--teal);
+}
+
+::selection {
+  color: var(--space);
+  background: #99f6e4;
 }
 
 button,
@@ -49,7 +57,7 @@ button {
 }
 
 button:disabled {
-  cursor: progress;
+  cursor: wait;
   opacity: 0.7;
 }
 
@@ -66,14 +74,30 @@ input:focus-visible {
   padding: 18px 14px 36px;
 }
 
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 14px;
+  color: #ffffff;
+  background: var(--space);
+  border-radius: 8px;
+  transform: translateY(-160%);
+  transition: transform 0.16s ease-out;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .topbar {
   display: grid;
   gap: 18px;
   padding: 18px;
   color: #f8fafc;
   background: var(--space);
-  border: 1px solid #0f172a;
-  border-radius: 8px;
+  border-radius: 16px;
   box-shadow: var(--shadow);
 }
 
@@ -85,9 +109,10 @@ input:focus-visible {
 .topbar h1,
 .screen-heading h2,
 .data-section h3 {
+  font-family: Bahnschrift, "Aptos Display", "Segoe UI Variable Display", sans-serif;
   margin: 0;
   line-height: 1.15;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
 }
 
 .topbar h1 {
@@ -99,16 +124,6 @@ input:focus-visible {
   margin: 0;
   color: #d1d5db;
   line-height: 1.55;
-}
-
-.eyebrow {
-  margin: 0 0 6px;
-  color: inherit;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.72;
 }
 
 .topbar-actions,
@@ -123,6 +138,13 @@ input:focus-visible {
 .topbar-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.location-privacy {
+  flex-basis: 100%;
+  max-width: 430px;
+  font-size: 0.82rem;
+  text-align: right;
 }
 
 /* Busca de local vive na tela do Open-Meteo: e a unica que reage a troca. */
@@ -304,9 +326,16 @@ input:focus-visible {
 .screen-shell,
 .data-section {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 14px;
+}
+
+.api-menu,
+.screen-shell {
   box-shadow: var(--shadow);
+}
+
+.data-section {
+  border: 1px solid var(--border);
 }
 
 .api-menu {
@@ -351,6 +380,10 @@ input:focus-visible {
   padding: 18px;
 }
 
+.screen-shell:focus {
+  outline: none;
+}
+
 .screen-heading {
   display: flex;
   align-items: flex-start;
@@ -362,6 +395,13 @@ input:focus-visible {
 
 .screen-heading h2 {
   font-size: 1.45rem;
+}
+
+.screen-kicker {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .screen-meta {
@@ -412,7 +452,6 @@ input:focus-visible {
 .news-row small,
 .news-row p,
 .source-row small,
-.media-tile span,
 .screen-meta {
   color: var(--muted);
   line-height: 1.45;
@@ -523,48 +562,6 @@ input:focus-visible {
   min-height: 340px;
 }
 
-.apod-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
-  gap: 18px;
-  margin-top: 16px;
-}
-
-.apod-layout img {
-  display: block;
-  width: 100%;
-  max-height: 560px;
-  object-fit: cover;
-  background: var(--space);
-  border-radius: 8px;
-}
-
-.apod-layout p {
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.translation-note {
-  display: block;
-  margin: 10px 0;
-  color: #92400e;
-  line-height: 1.5;
-}
-
-.source-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  color: var(--blue);
-  font-weight: 900;
-  text-decoration: none;
-}
-
-.source-link:hover {
-  text-decoration: underline;
-}
-
 .news-row {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
@@ -622,41 +619,6 @@ input:focus-visible {
 .severity-dot.media {
   background: var(--amber);
   box-shadow: 0 0 0 5px var(--amber-soft);
-}
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.media-tile {
-  margin: 0;
-  overflow: hidden;
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.media-tile img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  background: var(--surface-muted);
-}
-
-.media-tile figcaption {
-  display: grid;
-  gap: 4px;
-  min-height: 62px;
-  padding: 10px;
-}
-
-.media-tile strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .source-row {
@@ -732,8 +694,7 @@ input:focus-visible {
 @media (max-width: 1080px) {
   .workspace,
   .screen-grid,
-  .overview-grid,
-  .apod-layout {
+  .overview-grid {
     grid-template-columns: 1fr;
   }
 
@@ -773,9 +734,6 @@ input:focus-visible {
     grid-column: 1 / -1;
   }
 
-  .photo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 760px) {
@@ -805,6 +763,11 @@ input:focus-visible {
   .topbar-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .location-privacy {
+    max-width: none;
+    text-align: left;
   }
 
   .location-search {
@@ -848,9 +811,6 @@ input:focus-visible {
     gap: 12px;
   }
 
-  .photo-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 460px) {
@@ -894,6 +854,8 @@ input:focus-visible {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 

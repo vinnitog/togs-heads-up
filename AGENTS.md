@@ -2,13 +2,13 @@
 
 ## Workspace Obrigatorio
 
-O workspace correto deste projeto e:
+O workspace correto deste projeto e a raiz deste repositorio. Confirme com:
 
 ```text
-C:\Users\Togszera\Desktop\Togs-heads-up
+git rev-parse --show-toplevel
 ```
 
-Antes de qualquer leitura, edicao, teste, commit ou push, confirme que o comando esta rodando nesse diretorio.
+Antes de qualquer leitura, edicao, teste, commit ou push, confirme que o comando esta rodando na raiz retornada.
 
 ## Contexto Do Projeto
 

@@ -193,81 +193,21 @@ test("fetchIncidents consults real default public APIs without env setup", async
   assert.equal(result.sources.find((source) => source.id === "g1-bauru-marilia").status, "conectado");
 });
 
-test("fetchIncidents consults a configured custom endpoint without fake fallback", async () => {
-  const result = await fetchIncidents({
-    env: {
-      VITE_INCIDENTS_API_URL: "https://example.test/alerts.json",
-    },
-    fetchImpl: async (url) => {
-      if (url.includes("rss2json")) {
-        return {
-          ok: true,
-          json: async () => ({ items: [] }),
-        };
-      }
-
-      if (url.includes("apiprevmet3.inmet.gov.br")) {
-        return {
-          ok: true,
-          json: async () => ({ hoje: [], amanha: [] }),
-        };
-      }
-
-      assert.equal(url, "https://example.test/alerts.json");
-      return {
-        ok: true,
-        json: async () => ({
-          incidents: [
-            {
-              id: "alerts-live",
-              type: "hazard",
-              description: "Buraco na pista",
-              city: "Marilia",
-              confidence: 7,
-              lat: -22.26,
-              lng: -49.89,
-            },
-          ],
-        }),
-      };
-    },
-  });
-
-  assert.equal(result.incidents.length, 1);
-  assert.equal(result.incidents[0].id, "alerts-live");
-  assert.equal(result.sources.find((source) => source.id === "alerts").status, "conectado");
-  assert.deepEqual(result.warnings, []);
-});
-
-test("source statuses reflect configured endpoints", () => {
-  const statuses = getSourceStatuses({ VITE_INCIDENTS_API_URL: "https://example.test/incidents" });
+test("source statuses list only configured public endpoints", () => {
+  const statuses = getSourceStatuses();
 
   assert.equal(statuses.find((source) => source.id === "g1-bauru-marilia").status, "conectado");
   assert.equal(statuses.find((source) => source.id === "giro-marilia").status, "conectado");
-  assert.equal(statuses.find((source) => source.id === "gmc-online").status, "conectado");
   assert.equal(statuses.find((source) => source.id === "inmet-alertas").status, "conectado");
-  assert.equal(statuses.find((source) => source.id === "alerts").status, "conectado");
+  assert.equal(statuses.find((source) => source.id === "open-meteo").status, "conectado");
 });
 
-test("removed private sources are no longer listed", () => {
-  const ids = getSourceStatuses({}).map((source) => source.id);
+test("removed broken and private sources are no longer listed", () => {
+  const ids = getSourceStatuses().map((source) => source.id);
 
-  for (const removed of ["waze", "artesp", "sinesp"]) {
+  for (const removed of ["waze", "artesp", "sinesp", "gmc-online", "alerts", "infosiga"]) {
     assert.ok(!ids.includes(removed), `${removed} should be removed`);
   }
-});
-
-test("an env source stays pendente until an endpoint is configured", () => {
-  assert.equal(
-    getSourceStatuses({}).find((source) => source.id === "infosiga").status,
-    "pendente",
-  );
-  assert.equal(
-    getSourceStatuses({ VITE_INFOSIGA_API_URL: "https://example.test/infosiga.json" }).find(
-      (source) => source.id === "infosiga",
-    ).status,
-    "conectado",
-  );
 });
 
 test("haversineKm measures real distance and handles invalid input", () => {
