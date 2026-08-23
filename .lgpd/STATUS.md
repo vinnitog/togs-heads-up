@@ -6,7 +6,7 @@
 
 **Início**: 22/08/2026
 
-**Última atualização**: 22/08/2026
+**Última atualização**: 23/08/2026
 
 **Encarregado**: pendente de avaliação de aplicabilidade
 
@@ -14,14 +14,14 @@
 
 - [x] L0 — Setup
 - [x] L1 — Legacy retrofit e gap analysis
-- [ ] L2 — Data mapping
-- [ ] L3 — Base legal
-- [ ] L4 — Vendor audit
-- [ ] L5 — Retenção e eliminação
-- [ ] L6 — Anonimização
-- [ ] L7 — Direitos do titular
-- [ ] L8 — Resposta a incidentes
-- [ ] L9 — Política de privacidade
+- [x] L2 — Data mapping
+- [x] L3 — Base legal
+- [x] L4 — Vendor audit
+- [x] L5 — Retenção e eliminação
+- [x] L6 — Anonimização
+- [x] L7 — Direitos do titular
+- [x] L8 — Resposta a incidentes
+- [x] L9 — Política de privacidade (draft; não publicada)
 - [ ] L10 — ECA Digital, se aplicável
 - [ ] L11 — RIPD, se aplicável
 - [ ] L12 — Encarregado/canal
@@ -31,6 +31,16 @@
 
 - `.lgpd/discovery.md` — descoberta técnica, 22/08/2026
 - `.lgpd/gaps.md` — gap analysis e plano priorizado, 22/08/2026
+- `.lgpd/data-map.md` — v1.0-draft, 23/08/2026; 5 atividades, 0 sensíveis, 0 alto risco
+- `.lgpd/legal-basis.md` — v1.0-draft, 23/08/2026; 1 consentimento e 4 legítimos interesses
+- `.lgpd/lia/` — 4 testes de balanceamento em draft, 23/08/2026
+- `.lgpd/vendors/` — auditoria de 8 terceiros + minuta de DPA, 23/08/2026
+- `.lgpd/transfers/` — 5 avaliações de transferência potencial, 23/08/2026
+- `.lgpd/retention.md` — v1.0-draft + cleanup técnico de cache, 23/08/2026
+- `.lgpd/security/anonymization.md` — avaliação concluída; 0 pipelines/datasets, 23/08/2026
+- `.lgpd/dsar/` — workflow e decisão sem endpoints, v1.0-draft, 23/08/2026
+- `.lgpd/incidents/` — runbook, registro e templates, v1.0-draft, 23/08/2026
+- `.lgpd/policies/privacy-policy-v1.0-draft.md` — minuta não vigente, 23/08/2026
 
 ## Gaps abertos
 
@@ -38,6 +48,6 @@ Ver `.lgpd/gaps.md`.
 
 ## Próximo passo
 
-⏸ Aguardando aprovação do checkpoint L1 antes de iniciar L2 (`lgpd-data-mapping`).
+⏸ Checkpoint L9: revisar `.lgpd/policies/privacy-policy-v1.0-draft.md`. Não publicar nem iniciar L10 sem aprovação explícita.
 
 > Este diagnóstico é uma referência de engenharia e não substitui revisão jurídica especializada.
