@@ -18,6 +18,19 @@ function listFiles(directory) {
   });
 }
 
+function removeExplicitRenameMigrationNotes(content) {
+  return content
+    .split(/\r?\n/)
+    .filter(
+      (line) =>
+        !(
+          line.includes("/Togs-heads-up/") &&
+          /\bv12\b|legad|escopo antigo|migra/i.test(line)
+        ),
+    )
+    .join("\n");
+}
+
 test("workflow kit files exist", () => {
   for (const file of ["AGENTS.md", "CLAUDE.md", "PROJECT_CONTEXT.md", "test.cmd", "package.json", ".gitignore"]) {
     assert.ok(fs.existsSync(path.join(root, file)), `${file} should exist`);
@@ -96,7 +109,7 @@ test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () 
   }
 });
 
-test("cache versions v4 and v12 stay coherent between code and LGPD drafts", () => {
+test("cache versions v4 and v13 stay coherent between code and LGPD drafts", () => {
   const api = read("src/services/earthSpaceApi.js");
   const serviceWorker = read("public/sw.js");
   const versionedDrafts = [
@@ -106,31 +119,63 @@ test("cache versions v4 and v12 stay coherent between code and LGPD drafts", () 
   ];
 
   assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v4:`/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v13`/);
+  assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   for (const file of versionedDrafts) {
     const content = read(file);
     assert.match(content, /togs-cache:v4:/, `${file} must document localStorage v4`);
-    assert.match(content, /togs-heads-up-v12/, `${file} must document Cache Storage v12`);
-    assert.doesNotMatch(content, /togs-cache:v3:|togs-heads-up-v11/, `${file} must not document stale versions`);
+    assert.match(content, /togs-heads-up-v13/, `${file} must document Cache Storage v13`);
+    assert.match(content, /togs-heads-up-v12/, `${file} must document the preserved legacy-scope v12 cache`);
+    assert.doesNotMatch(content, /togs-cache:v3:/, `${file} must not document stale localStorage versions`);
+  }
+});
+
+test("functional files contain no uppercase legacy deployment path", () => {
+  const checkedFiles = [
+    ...listFiles("src"),
+    ...listFiles("public"),
+    ...listFiles("docs"),
+    "vite.config.js",
+    "index.html",
+    ".github/workflows/deploy-pages.yml",
+    "README.md",
+    ".lgpd/data-map.md",
+    ".lgpd/retention.md",
+    ".lgpd/policies/privacy-policy-v1.0-draft.md",
+  ];
+
+  for (const file of checkedFiles) {
+    const functionalContent = removeExplicitRenameMigrationNotes(read(file));
+    assert.doesNotMatch(functionalContent, /\/Togs-heads-up\//, `${file} must use the lowercase deployment path`);
   }
 });
 
 test("github pages deployment builds vite output for repository subpath", () => {
   const viteConfig = read("vite.config.js");
   const index = read("index.html");
+  const main = read("src/main.jsx");
   const manifest = read("public/manifest.webmanifest");
   const serviceWorker = read("public/sw.js");
   const workflow = read(".github/workflows/deploy-pages.yml");
   const packageJson = read("package.json");
+  const readme = read("README.md");
+  const privacyPolicy = read(".lgpd/policies/privacy-policy-v1.0-draft.md");
   const testCmd = read("test.cmd");
 
-  assert.match(viteConfig, /\/Togs-heads-up\//);
+  assert.match(viteConfig, /\/togs-heads-up\//);
+  assert.doesNotMatch(viteConfig, /\/Togs-heads-up\//);
+  assert.match(readme, /https:\/\/vinnitog\.github\.io\/togs-heads-up\//);
+  assert.match(privacyPolicy, /https:\/\/vinnitog\.github\.io\/togs-heads-up\//);
+  assert.doesNotMatch(`${readme}\n${privacyPolicy}`, /\/Togs-heads-up\//);
   assert.match(index, /%BASE_URL%manifest\.webmanifest/);
   assert.match(index, /%BASE_URL%icon\.svg/);
+  assert.match(main, /register\(`\$\{import\.meta\.env\.BASE_URL\}sw\.js`/);
+  assert.match(main, /scope: import\.meta\.env\.BASE_URL/);
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v13`/);
+  assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);
   assert.match(serviceWorker, /text\/xml/);

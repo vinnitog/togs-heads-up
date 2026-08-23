@@ -2,7 +2,7 @@
 
 Dashboard responsivo que reúne clima, previsão, alertas regionais de Marília-SP e registros públicos de bolas de fogo em uma única interface.
 
-[Acessar demonstração](https://vinnitog.github.io/Togs-heads-up/)
+[Acessar demonstração](https://vinnitog.github.io/togs-heads-up/)
 
 ## Destaques
 

@@ -1,5 +1,8 @@
 const CACHE_PREFIX = "togs-heads-up-";
-const CACHE_NAME = `${CACHE_PREFIX}v12`;
+const CACHE_NAME = `${CACHE_PREFIX}v13`;
+// A v12 pertence ao escopo antigo /Togs-heads-up/. Cache Storage e compartilhado
+// por origem, entao apaga-la aqui quebraria o shell offline da instalacao antiga.
+const LEGACY_SCOPE_CACHE_NAME = `${CACHE_PREFIX}v12`;
 const toScopeUrl = (path) => new URL(path, self.registration.scope).toString();
 const INDEX_URL = toScopeUrl("index.html");
 const STATIC_APP_SHELL = ["./", "manifest.webmanifest", "icon.svg"].map(toScopeUrl);
@@ -44,7 +47,10 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .filter(
+              (key) =>
+                key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME && key !== LEGACY_SCOPE_CACHE_NAME,
+            )
             .map((key) => caches.delete(key)),
         ),
       )

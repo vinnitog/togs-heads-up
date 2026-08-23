@@ -89,10 +89,10 @@
 | Dados | Assets estáticos; timestamps técnicos; clima/localidade de cidade pesquisada; registros públicos de bolas de fogo. Coordenadas `geo-*` são excluídas do cache. |
 | Sensíveis? | Não. |
 | Fonte | Respostas públicas já processadas no navegador. |
-| Sistemas | Cache Storage `togs-heads-up-v12`; `localStorage` sob `togs-cache:v4:`. |
+| Sistemas | Cache Storage atual `togs-heads-up-v13`; cache legado `togs-heads-up-v12` preservado para a instalação do escopo antigo; `localStorage` sob `togs-cache:v4:`. |
 | Operadores/terceiros | Nenhum novo compartilhamento; armazenamento fica no dispositivo do titular. |
 | Transferência internacional | Não causada pelo armazenamento local. |
-| Retenção no app | Cache Storage permanece até atualização/limpeza do navegador; caches antigos do app são removidos na ativação. `localStorage`: TTL operacional de 15 min/3 h, fallback de até 24 h e remoção física de entradas expiradas/legadas na próxima carga. |
+| Retenção no app | Cache Storage permanece até atualização/limpeza do navegador; caches obsoletos do escopo atual são removidos na ativação, enquanto a v12 do escopo antigo é preservada durante a migração. `localStorage`: TTL operacional de 15 min/3 h, fallback de até 24 h e remoção física de entradas expiradas/legadas na próxima carga. |
 | Segurança/minimização | Namespaces próprios; remoção restrita a caches do app; APIs externas não entram no service worker; geolocalização exata não é persistida. |
 | Alto risco? | Não. |
 | Owner | Responsável pelo repositório e titular pelo armazenamento no dispositivo. |
@@ -138,7 +138,8 @@
 | `togs-cache:v4:weather:{lat},{lng}` | Resposta de clima + localidade pesquisada | 15 min; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v4:cptec:{lat},{lng}` | Previsão pública CPTEC | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v4:fireballs:global` | Eventos públicos NASA/JPL | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não |
-| `togs-heads-up-v12` | HTML, JS, CSS, manifest e ícone | Até atualização/limpeza do navegador | Não |
+| `togs-heads-up-v13` | Shell do escopo atual `/togs-heads-up/` | Até atualização/limpeza do navegador | Não |
+| `togs-heads-up-v12` | Shell legado do escopo `/Togs-heads-up/` | Preservado durante a migração; até limpeza/reinstalação do navegador | Não |
 
 ## Resultado do teste de alto risco
 
