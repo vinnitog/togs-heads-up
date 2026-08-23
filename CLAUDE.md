@@ -2,13 +2,13 @@
 
 ## Workspace Obrigatorio
 
-Use sempre este workspace:
+Use sempre a raiz deste repositorio como workspace. Confirme com:
 
 ```text
-C:\Users\Togszera\Desktop\Togs-heads-up
+git rev-parse --show-toplevel
 ```
 
-Antes de ler, editar, testar, commitar ou fazer push, confirme que o terminal esta nesse diretorio.
+Antes de ler, editar, testar, commitar ou fazer push, confirme que o terminal esta na raiz retornada.
 
 ## Contexto Compartilhado
 

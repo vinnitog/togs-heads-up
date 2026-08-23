@@ -1,0 +1,2 @@
+# Preserve vendored upstream snapshots without enforcing this repository's whitespace policy.
+.agents/skills/** -whitespace

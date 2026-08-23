@@ -4,7 +4,6 @@ const rss2json = (rssUrl) => `https://api.rss2json.com/v1/api.json?rss_url=${enc
 
 const G1_RSS_JSON_URL = rss2json("https://g1.globo.com/rss/g1/sp/bauru-marilia/");
 const GIRO_MARILIA_RSS_JSON_URL = rss2json("https://www.giromarilia.com.br/feed/");
-const GMC_ONLINE_RSS_JSON_URL = rss2json("https://www.gmconline.com.br/feed/");
 
 export const INCIDENT_API_SOURCES = [
   {
@@ -24,14 +23,6 @@ export const INCIDENT_API_SOURCES = [
     detail: "Portal local de Marília convertido para JSON, filtrado por ocorrências de segurança e trânsito.",
   },
   {
-    id: "gmc-online",
-    name: "GMC Online",
-    cadence: "30 min",
-    url: GMC_ONLINE_RSS_JSON_URL,
-    parser: "rss2json",
-    detail: "Jornal local de Marília convertido para JSON, filtrado por ocorrências de segurança e trânsito.",
-  },
-  {
     id: "inmet-alertas",
     name: "INMET Avisos Meteorológicos",
     cadence: "operacional",
@@ -40,20 +31,4 @@ export const INCIDENT_API_SOURCES = [
     detail: "Avisos meteorológicos oficiais ativos filtrados pelo geocódigo de Marília.",
   },
   OPEN_METEO_SOURCE,
-  {
-    id: "alerts",
-    name: "API de alertas",
-    cadence: "tempo real",
-    envKey: "VITE_INCIDENTS_API_URL",
-    parser: "generic",
-    detail: "Endpoint JSON próprio ou proxy operacional com alertas normalizados.",
-  },
-  {
-    id: "infosiga",
-    name: "INFOSIGA DETRAN-SP",
-    cadence: "histórico",
-    envKey: "VITE_INFOSIGA_API_URL",
-    parser: "generic",
-    detail: "Base histórica pública de sinistros de trânsito por município.",
-  },
 ];

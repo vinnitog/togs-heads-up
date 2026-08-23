@@ -17,6 +17,19 @@ test("workflow kit files exist", () => {
   }
 });
 
+test("vendored skills preserve upstream licenses and notices", () => {
+  const licenses = read("THIRD_PARTY_LICENSES.md");
+  const skills = read("docs/SKILLS.md");
+
+  assert.match(licenses, /Copyright \(c\) 2026 goul4rt/);
+  assert.match(licenses, /Copyright \(c\) 2026 Pawel Huryn/);
+  assert.match(licenses, /Apache License[\s\S]*Copyright 2025 Paul Bakaus/);
+  assert.match(licenses, /platform-design-skills/);
+  assert.match(skills, /d85d79abeeb37cb99fc0785e735a9ca790698a77/);
+  assert.match(skills, /56f44523f76efdcec813e67b38ee550e49b16f48/);
+  assert.match(skills, /18468a95b427e70e258b51389796367c6f684e7d/);
+});
+
 test("codex and claude share the mandatory workflow", () => {
   const agents = read("AGENTS.md");
   const claude = read("CLAUDE.md");
@@ -73,7 +86,8 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(index, /%BASE_URL%icon\.svg/);
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
-  assert.match(serviceWorker, /togs-heads-up-v10/);
+  assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v11`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);
   assert.match(serviceWorker, /text\/xml/);
@@ -134,18 +148,18 @@ test("service worker bypasses external APIs before asset caching", () => {
   assert.match(serviceWorker.slice(bypassGuard, assetCache), /\{\s*return;\s*\}/);
 });
 
-test("APOD fallback messaging stays explicit and in Portuguese", () => {
-  const app = read("src/App.jsx");
+test("service worker only removes old caches owned by this app", () => {
+  const serviceWorker = read("public/sw.js");
 
-  assert.match(app, /translationStatus === "partial"/);
-  assert.match(app, /Parte do conteúdo está no original/);
-  assert.match(app, /Conteúdo original em inglês/);
+  assert.match(serviceWorker, /key\.startsWith\(CACHE_PREFIX\) && key !== CACHE_NAME/);
+  assert.doesNotMatch(serviceWorker, /keys\.filter\(\(key\) => key !== CACHE_NAME\)/);
 });
 
-test("app is consult only and uses public weather and astronomy APIs", () => {
+test("app is consult only and uses public APIs without private keys", () => {
   const app = read("src/App.jsx");
   const api = read("src/services/earthSpaceApi.js");
   const env = read(".env.example");
+  const workflow = read(".github/workflows/deploy-pages.yml");
 
   assert.doesNotMatch(app, new RegExp("Relat" + "ar|Registrar " + "alerta|ReportPanel|PlusCircle|Trash2"));
   assert.doesNotMatch(app, new RegExp("local" + "Storage"));
@@ -156,12 +170,9 @@ test("app is consult only and uses public weather and astronomy APIs", () => {
   assert.match(api, /api\.open-meteo\.com/);
   assert.match(api, /geocoding-api\.open-meteo\.com/);
   assert.match(api, /servicos\.cptec\.inpe\.br/);
-  assert.match(api, /planetary\/apod/);
-  assert.match(api, /neo\/rest\/v1\/feed/);
-  assert.match(api, /cad\.api/);
   assert.match(api, /fireball\.api/);
-  assert.match(api, /mars-photos/);
-  assert.doesNotMatch(api, /images-api\.nasa\.gov/);
-  assert.doesNotMatch(app, /NASA Image Library|NasaLibraryPanel|nasaImages/);
-  assert.match(env, /VITE_NASA_API_KEY/);
+  assert.doesNotMatch(api, /planetary\/apod|neo\/rest\/v1\/feed|cad\.api|mars-photos|api_key/i);
+  assert.doesNotMatch(app, /NASA APOD|NASA NeoWs|JPL CAD|Fotos de Marte/);
+  assert.doesNotMatch(env, /VITE_NASA_API_KEY|VITE_INCIDENTS_API_URL|VITE_INFOSIGA_API_URL/);
+  assert.doesNotMatch(workflow, /VITE_NASA_API_KEY|secrets\.VITE_/);
 });

@@ -1,5 +1,3 @@
-export const NASA_DEMO_KEY = "DEMO_KEY";
-
 export const DEFAULT_LOCATION = {
   id: "marilia-sp",
   name: "Marília",
@@ -17,12 +15,7 @@ const DEFAULT_TIMEOUT_MS = 12000;
 // nao deve segurar o painel inteiro por 12s antes de cair para erro/cache.
 const PROXY_TIMEOUT_MS = 8000;
 const CPTEC_BASE_URL = "https://servicos.cptec.inpe.br/XML";
-const NASA_API_BASE_URL = "https://api.nasa.gov";
 const JPL_SSD_BASE_URL = "https://ssd-api.jpl.nasa.gov";
-const TRANSLATION_API_BASE_URL = "https://api.mymemory.translated.net/get";
-// A MyMemory limita `q` por bytes UTF-8, nao por quantidade de caracteres.
-const TRANSLATION_CHUNK_SIZE_BYTES = 450;
-const APOD_UNTRANSLATED_CACHE_TTL_MS = 15 * 60 * 1000;
 
 // Cache local (localStorage) para evitar rate limit e falhas transitorias.
 // Cada fonte so vai a rede quando o cache "fresco" expira (TTL). Se a rede
@@ -36,11 +29,7 @@ const HOUR = 60 * MINUTE;
 const CACHE_TTL_MS = {
   weather: 15 * MINUTE,
   cptec: 3 * HOUR,
-  apod: 6 * HOUR,
-  neows: 6 * HOUR,
-  cad: 6 * HOUR,
   fireballs: 3 * HOUR,
-  marsPhotos: 12 * HOUR,
 };
 
 // Ate quando um valor expirado ainda serve como fallback em caso de falha.
@@ -233,20 +222,6 @@ const BRAZIL_STATE_CODES = {
   tocantins: "TO",
 };
 
-const MARS_CAMERA_LABELS = {
-  FHAZ: "Câmera frontal de prevenção de riscos",
-  "FRONT HAZARD AVOIDANCE CAMERA": "Câmera frontal de prevenção de riscos",
-  RHAZ: "Câmera traseira de prevenção de riscos",
-  "REAR HAZARD AVOIDANCE CAMERA": "Câmera traseira de prevenção de riscos",
-  MAST: "Câmera do mastro",
-  CHEMCAM: "Complexo de química e câmera",
-  MAHLI: "Imageador de lente de mão de Marte",
-  MARDI: "Imageador de descida de Marte",
-  NAVCAM: "Câmera de navegação",
-  PANCAM: "Câmera panorâmica",
-  MINITES: "Espectrômetro de emissão térmica em miniatura",
-};
-
 function readViteEnv() {
   return typeof import.meta !== "undefined" && import.meta.env ? import.meta.env : {};
 }
@@ -272,16 +247,6 @@ function compactNumber(value, digits = 0) {
   const number = toFiniteNumber(value);
   if (number === null) return null;
   return Number(number.toFixed(digits));
-}
-
-function dateToParam(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function addDays(date, days) {
-  const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
 }
 
 function mergeSignals(parentSignal, timeoutMs) {
@@ -467,10 +432,6 @@ function locationMatchesMarilia(location) {
   );
 }
 
-export function getNasaApiKey(env = readViteEnv()) {
-  return normalizeText(env.VITE_NASA_API_KEY, NASA_DEMO_KEY);
-}
-
 export function buildLocationLabel(location = DEFAULT_LOCATION) {
   return [location.name, location.admin1, location.country].filter(Boolean).join(", ");
 }
@@ -518,7 +479,7 @@ export function buildReverseGeocodingUrl({ latitude, longitude }) {
 
 export function normalizeReverseGeocodingResult(payload, { latitude, longitude }) {
   return {
-    id: `geo-${latitude},${longitude}`,
+    id: "geo-current",
     name: normalizeText(payload?.city || payload?.locality, "Minha localização"),
     admin1: normalizeText(payload?.principalSubdivision),
     country: normalizeText(payload?.countryName),
@@ -537,124 +498,9 @@ export function buildCptecForecastUrl(cityId = DEFAULT_LOCATION.cptecId) {
   return `${CPTEC_BASE_URL}/cidade/${encodeURIComponent(cityId)}/previsao.xml`;
 }
 
-export function buildApodUrl(apiKey = NASA_DEMO_KEY) {
-  const params = new URLSearchParams({ api_key: apiKey, thumbs: "true" });
-  return `${NASA_API_BASE_URL}/planetary/apod?${params.toString()}`;
-}
-
-export function buildTranslationUrl(text) {
-  const params = new URLSearchParams({ q: normalizeText(text), langpair: "en|pt-BR" });
-  return `${TRANSLATION_API_BASE_URL}?${params.toString()}`;
-}
-
-function splitTextForTranslation(text) {
-  const chunks = [];
-  const encoder = new TextEncoder();
-  let remaining = normalizeText(text);
-
-  while (encoder.encode(remaining).length > TRANSLATION_CHUNK_SIZE_BYTES) {
-    let chunkBytes = 0;
-    let maxChunk = "";
-
-    for (const character of remaining) {
-      const characterBytes = encoder.encode(character).length;
-      if (chunkBytes + characterBytes > TRANSLATION_CHUNK_SIZE_BYTES) break;
-      maxChunk += character;
-      chunkBytes += characterBytes;
-    }
-
-    const sentenceBreak = maxChunk.lastIndexOf(". ");
-    const wordBreak = maxChunk.lastIndexOf(" ");
-    const splitAt = sentenceBreak >= maxChunk.length / 2 ? sentenceBreak + 1 : wordBreak;
-    const safeSplitAt = splitAt > 0 ? splitAt : maxChunk.length;
-    chunks.push({ text: remaining.slice(0, safeSplitAt).trim(), separator: splitAt > 0 ? " " : "" });
-    remaining = remaining.slice(safeSplitAt).trim();
-  }
-
-  if (remaining) chunks.push({ text: remaining, separator: "" });
-  return chunks;
-}
-
-function decodeTranslationText(text) {
-  return normalizeText(text)
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'")
-    .replaceAll("&amp;", "&")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">");
-}
-
-async function requestPtBrTranslation(text, options = {}) {
-  const sourceText = normalizeText(text);
-  if (!sourceText) return { text: sourceText, translated: true };
-
-  try {
-    const translationOptions = {
-      ...options,
-      fetchImpl: options.fetchImpl ?? globalThis.fetch,
-      corsProxy: "",
-      timeoutMs: Math.min(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 6000),
-    };
-    const translatedChunks = await Promise.all(
-      splitTextForTranslation(sourceText).map(async ({ text: chunk, separator }) => {
-        const payload = await fetchJson(buildTranslationUrl(chunk), translationOptions);
-        const responseStatus = Number(payload?.responseStatus);
-        if (Number.isFinite(responseStatus) && (responseStatus < 200 || responseStatus >= 300)) {
-          throw new Error(normalizeText(payload?.responseDetails, `HTTP ${responseStatus}`));
-        }
-        const translated = decodeTranslationText(payload?.responseData?.translatedText);
-        if (!translated) throw new Error("tradução vazia");
-        return { text: translated, separator };
-      }),
-    );
-
-    return {
-      text: translatedChunks.map((chunk) => `${chunk.text}${chunk.separator}`).join("").trim(),
-      translated: true,
-    };
-  } catch (error) {
-    if (options.signal?.aborted) throw error;
-    return { text: sourceText, translated: false };
-  }
-}
-
-export async function translateTextToPtBr(text, options = {}) {
-  return (await requestPtBrTranslation(text, options)).text;
-}
-
-export function buildNeoWsUrl(apiKey = NASA_DEMO_KEY, now = new Date()) {
-  const params = new URLSearchParams({
-    start_date: dateToParam(now),
-    end_date: dateToParam(addDays(now, 7)),
-    api_key: apiKey,
-  });
-
-  return `${NASA_API_BASE_URL}/neo/rest/v1/feed?${params.toString()}`;
-}
-
-export function buildJplCloseApproachUrl() {
-  const params = new URLSearchParams({
-    "date-min": "now",
-    "date-max": "+30",
-    "dist-max": "0.2",
-    sort: "date",
-    limit: "8",
-    fullname: "true",
-  });
-
-  return `${JPL_SSD_BASE_URL}/cad.api?${params.toString()}`;
-}
-
 export function buildFireballUrl(limit = 8) {
   const params = new URLSearchParams({ limit: String(limit), "req-loc": "true" });
   return `${JPL_SSD_BASE_URL}/fireball.api?${params.toString()}`;
-}
-
-export function buildMarsRoverPhotosUrl(apiKey = NASA_DEMO_KEY) {
-  // latest_photos e mais confiavel que photos?sol=...&camera=...: retorna as
-  // fotos mais recentes disponiveis, sem 404 quando o sol/camera nao tem imagem.
-  const params = new URLSearchParams({ api_key: apiKey });
-  return `${NASA_API_BASE_URL}/mars-photos/api/v1/rovers/curiosity/latest_photos?${params.toString()}`;
 }
 
 export function normalizeGeocodingResults(payload) {
@@ -759,92 +605,6 @@ export function normalizeCptecForecastXml(xml) {
   };
 }
 
-export function normalizeApodPayload(payload) {
-  if (!payload || typeof payload !== "object") return null;
-
-  return {
-    title: normalizeText(payload.title, "Astronomy Picture of the Day"),
-    date: normalizeText(payload.date),
-    mediaType: normalizeText(payload.media_type, "image"),
-    imageUrl: normalizeText(payload.media_type) === "video" ? normalizeText(payload.thumbnail_url) : normalizeText(payload.hdurl || payload.url),
-    url: normalizeText(payload.url),
-    copyright: normalizeText(payload.copyright),
-    explanation: normalizeText(payload.explanation),
-  };
-}
-
-export async function translateApodToPtBr(apod, options = {}) {
-  if (!apod) return null;
-
-  const [title, explanation] = await Promise.all([
-    requestPtBrTranslation(apod.title, options),
-    requestPtBrTranslation(apod.explanation, options),
-  ]);
-  const translatedParts = [title, explanation].filter((part) => part.text);
-  const translatedCount = translatedParts.filter((part) => part.translated).length;
-
-  return {
-    ...apod,
-    title: title.text,
-    explanation: explanation.text,
-    translationStatus:
-      translatedCount === translatedParts.length
-        ? "translated"
-        : translatedCount > 0
-          ? "partial"
-          : "original",
-  };
-}
-
-export function normalizeNeoWsPayload(payload) {
-  const byDate = payload?.near_earth_objects ?? {};
-  const items = Object.entries(byDate).flatMap(([date, objects]) =>
-    (Array.isArray(objects) ? objects : []).map((object) => {
-      const approach = object.close_approach_data?.[0] ?? {};
-      const diameter = object.estimated_diameter?.meters ?? {};
-      const minDiameter = toFiniteNumber(diameter.estimated_diameter_min, 0);
-      const maxDiameter = toFiniteNumber(diameter.estimated_diameter_max, 0);
-
-      return {
-        id: normalizeText(object.id),
-        name: normalizeText(object.name),
-        date,
-        approachDate: normalizeText(approach.close_approach_date_full || approach.close_approach_date, date),
-        velocityKmS: compactNumber(approach.relative_velocity?.kilometers_per_second, 2),
-        missDistanceKm: compactNumber(approach.miss_distance?.kilometers),
-        diameterM: compactNumber((minDiameter + maxDiameter) / 2, 1),
-        hazardous: Boolean(object.is_potentially_hazardous_asteroid),
-        nasaUrl: normalizeText(object.nasa_jpl_url),
-      };
-    }),
-  );
-
-  items.sort((a, b) => (a.missDistanceKm ?? Number.POSITIVE_INFINITY) - (b.missDistanceKm ?? Number.POSITIVE_INFINITY));
-
-  return {
-    count: toFiniteNumber(payload?.element_count, items.length) ?? items.length,
-    hazardousCount: items.filter((item) => item.hazardous).length,
-    closest: items[0] ?? null,
-    largest: [...items].sort((a, b) => (b.diameterM ?? 0) - (a.diameterM ?? 0))[0] ?? null,
-    items: items.slice(0, 8),
-  };
-}
-
-export function normalizeJplCadPayload(payload) {
-  const fields = payload?.fields ?? [];
-  const data = Array.isArray(payload?.data) ? payload.data : [];
-
-  return data.map((row) => ({
-    designation: normalizeText(readIndexed(row, indexOfField(fields, "des"))),
-    name: normalizeText(readIndexed(row, indexOfField(fields, "fullname"))) || normalizeText(readIndexed(row, indexOfField(fields, "des"))),
-    date: normalizeText(readIndexed(row, indexOfField(fields, "cd"))),
-    distanceAu: compactNumber(readIndexed(row, indexOfField(fields, "dist")), 5),
-    velocityKmS: compactNumber(readIndexed(row, indexOfField(fields, "v_rel")), 2),
-    magnitudeH: compactNumber(readIndexed(row, indexOfField(fields, "h")), 1),
-    diameterKm: compactNumber(readIndexed(row, indexOfField(fields, "diameter")), 3),
-  }));
-}
-
 export function normalizeFireballPayload(payload) {
   const fields = payload?.fields ?? [];
   const data = Array.isArray(payload?.data) ? payload.data : [];
@@ -864,21 +624,6 @@ export function normalizeFireballPayload(payload) {
       impactEnergyKt: compactNumber(readIndexed(row, indexOfField(fields, "impact-e")), 3),
     };
   });
-}
-
-export function normalizeMarsRoverPayload(payload) {
-  const photos = Array.isArray(payload?.latest_photos) ? payload.latest_photos : payload?.photos;
-
-  return (Array.isArray(photos) ? photos : []).slice(0, 6).map((photo) => ({
-    id: String(photo.id ?? photo.img_src),
-    rover: normalizeText(photo.rover?.name, "Curiosity"),
-    camera:
-      MARS_CAMERA_LABELS[normalizeText(photo.camera?.name || photo.camera?.full_name).toUpperCase()] ||
-      normalizeText(photo.camera?.full_name || photo.camera?.name, "Câmera"),
-    earthDate: normalizeText(photo.earth_date),
-    sol: toFiniteNumber(photo.sol),
-    imageUrl: normalizeText(photo.img_src).replace(/^http:\/\//i, "https://"),
-  }));
 }
 
 async function fetchCptecForecastForLocation(location, options) {
@@ -924,7 +669,9 @@ export async function resolveLocationFromCoords(
     const payload = await fetchJson(buildReverseGeocodingUrl(coords), { fetchImpl, signal, timeoutMs });
     return normalizeReverseGeocodingResult(payload, coords);
   } catch (error) {
-    if (error?.name === "AbortError") throw error;
+    // Um AbortError sem cancelamento do chamador e apenas o timeout interno da
+    // consulta de nome. As coordenadas ainda sao suficientes para o clima.
+    if (signal?.aborted) throw error;
     // Sem o nome do lugar o painel ainda funciona: as coordenadas bastam para o
     // Open-Meteo. Só o CPTEC/INPE fica sem cidade para consultar.
     return normalizeReverseGeocodingResult(null, coords);
@@ -937,58 +684,35 @@ export async function fetchEarthSpaceDashboard({
   fetchImpl = globalThis.fetch,
   signal,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-  now = new Date(),
   storage = getDefaultStorage(),
   forceRefresh = false,
 } = {}) {
   if (typeof fetchImpl !== "function") throw new Error("Fetch API indisponível neste ambiente.");
 
-  const apiKey = getNasaApiKey(env);
   const options = { fetchImpl, signal, timeoutMs, corsProxy: getCorsProxy(env) };
   const locationScope = `${location.latitude},${location.longitude}`;
+  const storesPreciseLocation = String(location.id).startsWith("geo-");
   const tasks = [
     {
       key: "weather",
       label: "Open-Meteo",
       scope: locationScope,
+      cacheable: !storesPreciseLocation,
       run: async () => normalizeWeatherPayload(await fetchJson(buildOpenMeteoForecastUrl(location), options), location),
     },
     {
       key: "cptec",
       label: "CPTEC/INPE",
       scope: locationScope,
+      cacheable: !storesPreciseLocation,
       proxyDependent: true,
       run: async () => fetchCptecForecastForLocation(location, options),
-    },
-    {
-      key: "apod",
-      label: "NASA APOD",
-      run: async () => {
-        const apod = normalizeApodPayload(await fetchJson(buildApodUrl(apiKey), options));
-        return translateApodToPtBr(apod, options);
-      },
-    },
-    {
-      key: "neows",
-      label: "NASA NeoWs",
-      run: async () => normalizeNeoWsPayload(await fetchJson(buildNeoWsUrl(apiKey, now), options)),
-    },
-    {
-      key: "cad",
-      label: "Aproximações — NASA/JPL",
-      proxyDependent: true,
-      run: async () => normalizeJplCadPayload(await fetchJson(buildJplCloseApproachUrl(), options)),
     },
     {
       key: "fireballs",
       label: "Bolas de fogo — NASA/JPL",
       proxyDependent: true,
       run: async () => normalizeFireballPayload(await fetchJson(buildFireballUrl(), options)),
-    },
-    {
-      key: "marsPhotos",
-      label: "Fotos de Marte — NASA",
-      run: async () => normalizeMarsRoverPayload(await fetchJson(buildMarsRoverPhotosUrl(apiKey), options)),
     },
   ];
 
@@ -1015,7 +739,7 @@ export async function fetchEarthSpaceDashboard({
   };
 }
 
-const EMPTY_TASK_VALUE = { weather: null, cptec: null, apod: null, neows: null };
+const EMPTY_TASK_VALUE = { weather: null, cptec: null };
 
 function emptyValueForTask(key) {
   return key in EMPTY_TASK_VALUE ? EMPTY_TASK_VALUE[key] : [];
@@ -1023,11 +747,8 @@ function emptyValueForTask(key) {
 
 async function runDashboardTask(task, { storage, forceRefresh, signal }) {
   const cacheKey = `${task.key}:${task.scope ?? "global"}`;
-  const cached = readCacheEntry(storage, cacheKey);
-  const ttl =
-    task.key === "apod" && cached?.value?.translationStatus && cached.value.translationStatus !== "translated"
-      ? APOD_UNTRANSLATED_CACHE_TTL_MS
-      : CACHE_TTL_MS[task.key] ?? 0;
+  const cached = task.cacheable === false ? null : readCacheEntry(storage, cacheKey);
+  const ttl = CACHE_TTL_MS[task.key] ?? 0;
   const ageMs = cached ? Date.now() - cached.storedAt : Infinity;
 
   // Cache fresco: nao vai a rede (principal defesa contra rate limit).
@@ -1037,7 +758,7 @@ async function runDashboardTask(task, { storage, forceRefresh, signal }) {
 
   try {
     const value = await withRetry(() => task.run(), { retries: 1, baseDelayMs: 500, signal });
-    writeCacheEntry(storage, cacheKey, value);
+    if (task.cacheable !== false) writeCacheEntry(storage, cacheKey, value);
     return buildOutcome(task, value, { fromCache: false });
   } catch (error) {
     // Aborto real (usuario/efeito trocou de local): descarta o painel inteiro.

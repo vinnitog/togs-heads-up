@@ -51,10 +51,6 @@ const RSS_SAFETY_TERMS = [
   "vitima",
 ];
 
-function readViteEnv() {
-  return typeof import.meta !== "undefined" && import.meta.env ? import.meta.env : {};
-}
-
 function clamp(value, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
 }
@@ -451,22 +447,20 @@ export function normalizeInmetPayload(payload, source) {
     });
 }
 
-export function getConfiguredSources(env = readViteEnv()) {
+export function getConfiguredSources() {
   return INCIDENT_API_SOURCES.map((source) => ({
     ...source,
-    url: normalizeText(source.url ?? env[source.envKey]),
+    url: normalizeText(source.url),
   }));
 }
 
-export function getSourceStatuses(env = readViteEnv()) {
-  return getConfiguredSources(env).map((source) => ({
+export function getSourceStatuses() {
+  return getConfiguredSources().map((source) => ({
     id: source.id,
     name: source.name,
     cadence: source.cadence,
-    status: source.url ? "conectado" : "pendente",
-    detail: source.url
-      ? `${source.detail} Cadência esperada: ${source.cadence}.`
-      : "Aguardando endpoint de integração.",
+    status: "conectado",
+    detail: `${source.detail} Cadência esperada: ${source.cadence}.`,
   }));
 }
 
@@ -603,7 +597,6 @@ function dedupeIncidents(incidents) {
 }
 
 export async function fetchIncidents({
-  env = readViteEnv(),
   fetchImpl = globalThis.fetch,
   signal,
   timeoutMs = DEFAULT_TIMEOUT_MS,
@@ -612,8 +605,8 @@ export async function fetchIncidents({
     throw new Error("Fetch API indisponível neste ambiente.");
   }
 
-  const configuredSources = getConfiguredSources(env).filter((source) => source.url);
-  const baseStatuses = getSourceStatuses(env);
+  const configuredSources = getConfiguredSources();
+  const baseStatuses = getSourceStatuses();
 
   if (configuredSources.length === 0) {
     return {

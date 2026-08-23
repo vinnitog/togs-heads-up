@@ -8,7 +8,7 @@ Aplicacao de uso pessoal para acompanhar clima terrestre, noticias locais de Mar
 
 ## Objetivo
 
-Mostrar clima atual, noticias locais, previsao, complemento CPTEC/INPE e dados NASA/JPL sobre asteroides, meteoros e imagens espaciais, permitindo buscar dinamicamente outros locais quando a API suportar.
+Mostrar clima atual, noticias locais, previsao, complemento CPTEC/INPE e registros publicos de bolas de fogo NASA/JPL, permitindo buscar dinamicamente outros locais quando a API suportar.
 
 ## Publico Alvo
 

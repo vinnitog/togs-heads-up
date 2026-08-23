@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
-  Aperture,
   CloudRain,
   CloudSun,
   Database,
@@ -16,11 +15,8 @@ import {
   MoonStar,
   Newspaper,
   RefreshCw,
-  Rocket,
-  Satellite,
   Search,
   Sun,
-  Telescope,
   Thermometer,
   WifiOff,
   Wind,
@@ -51,11 +47,7 @@ import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./u
 const EMPTY_DASHBOARD = {
   weather: null,
   cptec: null,
-  apod: null,
-  neows: null,
-  cad: [],
   fireballs: [],
-  marsPhotos: [],
   sources: [],
   warnings: [],
   fetchedAt: null,
@@ -80,13 +72,7 @@ const VIEW_GROUPS = [
   },
   {
     title: "Espaço",
-    items: [
-      { id: "apod", label: "NASA APOD", icon: Aperture },
-      { id: "neows", label: "NASA NeoWs", icon: Satellite },
-      { id: "cad", label: "JPL CAD", icon: Telescope },
-      { id: "fireballs", label: "Bolas de fogo", icon: Flame },
-      { id: "mars", label: "Marte", icon: Rocket },
-    ],
+    items: [{ id: "fireballs", label: "Bolas de fogo", icon: Flame }],
   },
   {
     title: "Sistema",
@@ -168,7 +154,7 @@ function App() {
     setLocalError("");
 
     try {
-      const result = await fetchIncidents({ env: import.meta.env, signal });
+      const result = await fetchIncidents({ signal });
       if (signal?.aborted || requestId !== localRequestIdRef.current) return;
 
       setLocalFeed({
@@ -337,11 +323,13 @@ function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#dashboard-content">
+        Ir para o conteúdo
+      </a>
       <header className="topbar">
         <div className="topbar-copy">
-          <p className="eyebrow">Painel pessoal</p>
-          <h1>Togs Heads-UP</h1>
-          <p>Clima, notícias de Marília-SP e eventos espaciais reunidos em um só lugar, cada fonte com seu próprio espaço.</p>
+          <h1>Togs Heads Up</h1>
+          <p>Clima, alertas de Marília-SP e registros espaciais públicos em uma leitura rápida.</p>
         </div>
 
         <div className="topbar-actions">
@@ -371,6 +359,9 @@ function App() {
           <button className="icon-button" type="button" onClick={refreshAll} aria-label="Atualizar painel">
             <RefreshCw size={18} className={isLoading || isLocalLoading ? "spin" : ""} />
           </button>
+          <p className="location-privacy">
+            Localização é opcional. Ao ativar, as coordenadas são consultadas no Open-Meteo e BigDataCloud, sem cadastro.
+          </p>
         </div>
       </header>
 
@@ -415,7 +406,7 @@ function App() {
           ))}
         </nav>
 
-        <section className="screen-shell">
+        <section className="screen-shell" id="dashboard-content" tabIndex="-1">
           <ScreenHeading view={currentView} activeView={activeView} dashboard={dashboard} localFeed={localFeed} />
           <ScreenAlert state={getViewState(activeView, { dashboard, localFeed, loadError, localError, isLoading, isLocalLoading })} />
           {activeView === "overview" && <OverviewScreen dashboard={dashboard} localFeed={localFeed} />}
@@ -435,16 +426,12 @@ function App() {
           )}
           {activeView === "cptec" && <CptecScreen cptec={dashboard.cptec} location={location} />}
           {activeView === "local" && <LocalNewsScreen localFeed={localFeed} isLoading={isLocalLoading} />}
-          {activeView === "apod" && <ApodScreen apod={dashboard.apod} />}
-          {activeView === "neows" && <NeoWsScreen neows={dashboard.neows} />}
-          {activeView === "cad" && <CadScreen cad={dashboard.cad} />}
           {activeView === "fireballs" && <FireballScreen fireballs={dashboard.fireballs} />}
-          {activeView === "mars" && <MarsScreen photos={dashboard.marsPhotos} />}
           {activeView === "sources" && <SourcesScreen dashboard={dashboard} localFeed={localFeed} />}
         </section>
       </main>
 
-      {notice && <div className="toast">{notice}</div>}
+      {notice && <div className="toast" role="status" aria-live="polite">{notice}</div>}
     </div>
   );
 }
@@ -455,8 +442,8 @@ function ScreenHeading({ view, activeView, dashboard, localFeed }) {
   return (
     <header className="screen-heading">
       <div>
-        <p className="eyebrow">{view?.label ?? "Painel"}</p>
         <h2>{getScreenTitle(view?.id)}</h2>
+        <p className="screen-kicker">{view?.label ?? "Painel"}</p>
       </div>
       <div className="screen-meta">
         <Globe2 size={16} />
@@ -480,7 +467,6 @@ function ScreenAlert({ state }) {
 function OverviewScreen({ dashboard, localFeed }) {
   const current = dashboard.weather?.current;
   const today = dashboard.weather?.daily?.[0];
-  const neows = dashboard.neows;
   const latestLocal = localFeed.incidents[0];
 
   return (
@@ -491,7 +477,6 @@ function OverviewScreen({ dashboard, localFeed }) {
           <SummaryLine icon={Thermometer} label="Open-Meteo" value={formatValue(current?.temperature, "C")} detail={current?.condition} />
           <SummaryLine icon={CloudRain} label="Chuva hoje" value={formatValue(today?.rainProbability, "%")} detail={`${formatValue(today?.precipitation, " mm")} previstos`} />
           <SummaryLine icon={Newspaper} label="Notícias locais" value={formatInteger(localFeed.incidents.length)} detail={latestLocal?.title ?? "Sem item local no filtro atual"} />
-          <SummaryLine icon={Satellite} label="NeoWs 7 dias" value={formatInteger(neows?.count)} detail={`${formatInteger(neows?.hazardousCount)} potencialmente perigosos`} />
           <SummaryLine icon={Flame} label="Bolas de fogo" value={formatInteger(dashboard.fireballs.length)} detail="Registros recentes CNEOS" />
         </div>
       </section>
@@ -643,7 +628,7 @@ function LocalNewsScreen({ localFeed, isLoading }) {
   return (
     <section className="data-section">
       <div className="section-title">
-        <h3>Fontes locais antigas mantidas</h3>
+        <h3>Notícias e alertas recentes</h3>
         <span>{isLoading ? "Atualizando..." : `${incidents.length} item(ns) filtrado(s)`}</span>
       </div>
 
@@ -668,89 +653,6 @@ function LocalNewsScreen({ localFeed, isLoading }) {
                 </a>
               )}
             </article>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ApodScreen({ apod }) {
-  if (!apod) return <EmptyState text="APOD indisponível no momento." />;
-
-  return (
-    <section className="data-section apod-layout">
-      {apod.imageUrl ? <img src={apod.imageUrl} alt={apod.title} /> : <EmptyState text="APOD sem imagem para hoje." compact />}
-      <div>
-        <h3>{apod.title}</h3>
-        <p>{formatDate(apod.date)}</p>
-        <p>{apod.explanation || "Sem descrição retornada pela NASA."}</p>
-        {apod.translationStatus && apod.translationStatus !== "translated" && (
-          <small className="translation-note">
-            {apod.translationStatus === "partial"
-              ? "Parte do conteúdo está no original porque a tradução automática ficou indisponível."
-              : "Conteúdo original em inglês: a tradução automática está indisponível no momento."}
-          </small>
-        )}
-        {apod.url && (
-          <a className="source-link" href={apod.url} target="_blank" rel="noreferrer">
-            Abrir APOD <ExternalLink size={16} />
-          </a>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function NeoWsScreen({ neows }) {
-  const items = neows?.items ?? [];
-
-  return (
-    <section className="data-section">
-      <div className="section-title">
-        <h3>Objetos próximos nos próximos 7 dias</h3>
-        <span>{formatInteger(neows?.hazardousCount)} potencialmente perigosos</span>
-      </div>
-      {items.length === 0 ? (
-        <EmptyState text="NeoWs sem objetos no recorte atual." />
-      ) : (
-        <div className="data-table">
-          {items.map((item) => (
-            <div className="data-row" key={item.id}>
-              <span>{item.approachDate}</span>
-              <strong>{item.name}</strong>
-              <small>
-                {formatDistanceKm(item.missDistanceKm)} | {formatValue(item.velocityKmS, " km/s")} |{" "}
-                {formatValue(item.diameterM, " m")}
-                {item.hazardous ? " | Potencialmente perigoso" : ""}
-              </small>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function CadScreen({ cad }) {
-  return (
-    <section className="data-section">
-      <div className="section-title">
-        <h3>Dados de aproximações</h3>
-        <span>{cad.length} aproximação(ões)</span>
-      </div>
-      {cad.length === 0 ? (
-        <EmptyState text="JPL CAD sem aproximações no recorte atual." />
-      ) : (
-        <div className="data-table">
-          {cad.map((item) => (
-            <div className="data-row" key={`${item.designation}-${item.date}`}>
-              <span>{item.date}</span>
-              <strong>{item.name}</strong>
-              <small>
-                {formatValue(item.distanceAu, " au")} | {formatValue(item.velocityKmS, " km/s")} | H {formatValue(item.magnitudeH)}
-              </small>
-            </div>
           ))}
         </div>
       )}
@@ -801,39 +703,11 @@ function FireballScreen({ fireballs }) {
   );
 }
 
-function MarsScreen({ photos }) {
-  return (
-    <section className="data-section">
-      <div className="section-title">
-        <h3>Veículo explorador Curiosity</h3>
-        <span>{photos.length} foto(s)</span>
-      </div>
-      {photos.length === 0 ? (
-        <EmptyState text="Fotos do veículo explorador de Marte indisponíveis no momento." />
-      ) : (
-        <div className="photo-grid">
-          {photos.slice(0, 6).map((photo) => (
-            <figure className="media-tile" key={photo.id}>
-              <img src={photo.imageUrl} alt={`${photo.rover} ${photo.camera}`} loading="lazy" />
-              <figcaption>
-                <strong>{photo.camera}</strong>
-                <span>
-                  Sol {photo.sol} | {formatShortDate(photo.earthDate)}
-                </span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 function SourcesScreen({ dashboard, localFeed }) {
   return (
     <div className="screen-grid">
-      <SourceGroup title="Clima e espaço" sources={dashboard.sources} />
-      <SourceGroup title="Notícias locais antigas" sources={localFeed.sources} local />
+      <SourceGroup title="Clima, previsão e espaço" sources={dashboard.sources} />
+      <SourceGroup title="Fontes regionais" sources={localFeed.sources} local />
     </div>
   );
 }
@@ -877,11 +751,7 @@ function getScreenTitle(id) {
     weather: "Clima atual e próximas 24h",
     cptec: "Previsão nacional brasileira",
     local: "Notícias e alertas regionais",
-    apod: "Imagem astronômica do dia",
-    neows: "Asteroides próximos",
-    cad: "Aproximações JPL",
     fireballs: "Meteoros e bolas de fogo",
-    mars: "Fotos de Marte",
     sources: "Estado das integrações",
   };
   return titles[id] ?? "Painel";
@@ -890,11 +760,7 @@ function getScreenTitle(id) {
 const DASHBOARD_VIEW_SOURCE = {
   weather: "weather",
   cptec: "cptec",
-  apod: "apod",
-  neows: "neows",
-  cad: "cad",
   fireballs: "fireballs",
-  mars: "marsPhotos",
 };
 
 function getViewState(activeView, ctx) {
@@ -949,20 +815,6 @@ function formatInteger(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return "--";
   return number.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
-}
-
-function formatDistanceKm(value) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return "--";
-  if (number >= 1000000) return `${(number / 1000000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi km`;
-  return `${Math.round(number).toLocaleString("pt-BR")} km`;
-}
-
-function formatDate(value) {
-  if (!value) return "";
-  const date = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
 function formatShortDate(value) {
