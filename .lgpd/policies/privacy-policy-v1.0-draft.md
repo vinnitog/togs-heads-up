@@ -74,7 +74,7 @@ Sem esses campos, esta política não atende à identificação e ao contato exi
 | coordenadas opcionais | memória/estado do navegador | sessão ativa; eliminadas ao desativar/recarregar |
 | clima de cidade | `localStorage` `togs-cache:v4:*` | fresco por 15 min; fallback até 24 h; remoção na primeira carga posterior |
 | CPTEC/fireballs | `localStorage` `togs-cache:v4:*` | fresco por 3 h; fallback até 24 h; remoção na primeira carga posterior |
-| shell PWA | Cache Storage `togs-heads-up-v13` | até atualização ou limpeza do navegador |
+| shell PWA | Cache Storage `togs-heads-up-v14` | até atualização ou limpeza do navegador |
 | shell PWA legado | Cache Storage `togs-heads-up-v12` | preservado durante a migração do endereço antigo; até limpeza/reinstalação |
 | notícias/alertas | memória da sessão | até fechar/recarregar |
 

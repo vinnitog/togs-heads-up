@@ -3,6 +3,7 @@ import { normalizeOpenMeteoPayload } from "./weatherSource.js";
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const MARILIA_IBGE_CODE = "3529005";
+const MARILIA_UTC_OFFSET = "-03:00";
 const MARILIA_BOUNDS = {
   minLat: -22.36,
   maxLat: -22.08,
@@ -139,6 +140,15 @@ function parseTimestamp(value) {
 
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function parseMariliaTimestamp(dateValue, timeValue) {
+  const date = normalizeText(dateValue).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+  const time = normalizeText(timeValue, "00:00");
+  const normalizedTime = /^\d{2}:\d{2}$/.test(time) ? `${time}:00` : time;
+  return parseTimestamp(`${date}T${normalizedTime}${MARILIA_UTC_OFFSET}`);
 }
 
 function normalizeType(value = "") {
@@ -424,8 +434,8 @@ export function normalizeInmetPayload(payload, source) {
       return geocodes.split(",").includes(MARILIA_IBGE_CODE) || cities.includes("marilia - sp");
     })
     .map((alert) => {
-      const startedAt = parseTimestamp(`${normalizeText(alert.data_inicio).slice(0, 10)} ${alert.hora_inicio ?? "00:00"}`);
-      const finishedAt = parseTimestamp(`${normalizeText(alert.data_fim).slice(0, 10)} ${alert.hora_fim ?? "23:59"}`);
+      const startedAt = parseMariliaTimestamp(alert.data_inicio, alert.hora_inicio ?? "00:00");
+      const finishedAt = parseMariliaTimestamp(alert.data_fim, alert.hora_fim ?? "23:59");
       const description = stripHtml(alert.descricao || "Aviso meteorológico");
       const risks = toArray(alert.riscos).join(" ");
 

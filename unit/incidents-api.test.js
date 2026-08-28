@@ -125,6 +125,7 @@ test("inmet active warnings are filtered by Marilia geocode", () => {
   assert.equal(incidents[0].id, "inmet-alertas-alerta-marilia");
   assert.equal(incidents[0].type, "risco");
   assert.equal(incidents[0].location, "Marília-SP");
+  assert.equal(incidents[0].occurredAt, "2026-06-27T15:00:00.000Z");
   assert.match(incidents[0].detail, /Chuva intensa/);
 });
 

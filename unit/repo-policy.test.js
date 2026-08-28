@@ -50,6 +50,26 @@ test("vendored skills preserve upstream licenses and notices", () => {
   assert.match(skills, /18468a95b427e70e258b51389796367c6f684e7d/);
 });
 
+test("orchestrator contract matches managed skills, licenses and repository boundaries", () => {
+  const orchestrator = JSON.parse(read(".togs/orchestrator.json"));
+  const managedSkills = read("SKILLS_MANAGED.md");
+
+  assert.equal(orchestrator.projectId, "togs-heads-up");
+  assert.deepEqual(orchestrator.capabilities, ["frontend", "dashboard", "external-apis", "accessibility"]);
+  assert.equal(orchestrator.policy.repositoryOwnsCodeAndGitHistory, true);
+  assert.equal(orchestrator.policy.crossProjectImportsAllowed, false);
+  assert.equal(orchestrator.policy.orchestratorMayCommitOrPush, false);
+
+  for (const skill of orchestrator.skills) {
+    assert.ok(fs.existsSync(path.join(root, ".agents", "skills", skill, "SKILL.md")), `${skill} must be installed`);
+    assert.ok(managedSkills.includes(`| \`${skill}\` |`), `${skill} must be documented as managed`);
+  }
+
+  for (const source of orchestrator.sources) {
+    assert.ok(fs.existsSync(path.join(root, source.licenseFile)), `${source.licenseFile} must exist`);
+  }
+});
+
 test("codex and claude share the mandatory workflow", () => {
   const agents = read("AGENTS.md");
   const claude = read("CLAUDE.md");
@@ -109,7 +129,7 @@ test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () 
   }
 });
 
-test("cache versions v4 and v13 stay coherent between code and LGPD drafts", () => {
+test("cache versions v4 and v14 stay coherent between code and LGPD drafts", () => {
   const api = read("src/services/earthSpaceApi.js");
   const serviceWorker = read("public/sw.js");
   const versionedDrafts = [
@@ -119,12 +139,12 @@ test("cache versions v4 and v13 stay coherent between code and LGPD drafts", () 
   ];
 
   assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v4:`/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v13`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v14`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   for (const file of versionedDrafts) {
     const content = read(file);
     assert.match(content, /togs-cache:v4:/, `${file} must document localStorage v4`);
-    assert.match(content, /togs-heads-up-v13/, `${file} must document Cache Storage v13`);
+    assert.match(content, /togs-heads-up-v14/, `${file} must document Cache Storage v14`);
     assert.match(content, /togs-heads-up-v12/, `${file} must document the preserved legacy-scope v12 cache`);
     assert.doesNotMatch(content, /togs-cache:v3:/, `${file} must not document stale localStorage versions`);
   }
@@ -174,7 +194,7 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v13`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v14`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);
@@ -220,6 +240,31 @@ test("responsive menu keeps accessible state and keyboard escape behavior", () =
   const phoneRules = styles.slice(styles.indexOf("@media (max-width: 460px)"));
   assert.match(phoneRules, /\.menu-group\s*\{[^}]*grid-template-columns:\s*1fr;/s);
   assert.match(styles, /\.api-menu button\s*\{[^}]*min-height:\s*44px;/s);
+});
+
+test("dashboard exposes textual states, units and chart summaries", () => {
+  const app = read("src/App.jsx");
+  const styles = read("src/styles.css");
+
+  assert.match(app, /Consultando fontes locais\.\.\./);
+  assert.match(app, /Severidade \{SEVERITY_LABELS\[incident\.severity\]/);
+  assert.match(app, /className=\{`severity-dot \$\{incident\.severity\}`\} aria-hidden="true"/);
+  assert.match(app, /summarizeHourlyWeather\(data\)/);
+  assert.match(app, /summarizeFireballs\(fireballs\)/);
+  assert.match(app, /className="chart-visual" aria-hidden="true"/);
+  assert.match(app, /Temperatura °C/);
+  assert.doesNotMatch(app, /formatValue\([^\n]+, "C"\)/);
+  assert.match(
+    app,
+    /role=\{state\.tone === "error" \? "alert" : "status"\} aria-live="polite"/,
+  );
+  assert.match(app, /className="toast" role="status" aria-live="polite"/);
+  assert.match(app, /aria-label="Abrir noticia"/);
+  assert.match(
+    app,
+    /location\.timezone === "auto" \? dashboard\.weather\?\.timezone : location\.timezone/,
+  );
+  assert.match(styles, /\.chart-summary\s*\{/);
 });
 
 test("service worker bypasses external APIs before asset caching", () => {
