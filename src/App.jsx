@@ -42,6 +42,13 @@ import {
   searchLocations,
 } from "./services/earthSpaceApi.js";
 import { fetchIncidents } from "./services/incidentsApi.js";
+import {
+  formatTimeInZone,
+  getViewState,
+  mergeLocalFeedResult,
+  summarizeFireballs,
+  summarizeHourlyWeather,
+} from "./utils/dashboardState.js";
 import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./utils/incidents.js";
 
 const EMPTY_DASHBOARD = {
@@ -58,6 +65,7 @@ const EMPTY_LOCAL_FEED = {
   sources: [],
   warnings: [],
   fetchedAt: null,
+  usingSessionFallback: false,
 };
 
 const VIEW_GROUPS = [
@@ -96,6 +104,12 @@ const INCIDENT_TYPE_LABELS = {
   risco: "Risco",
   rodovia: "Rodovia",
   historico: "Histórico",
+};
+
+const SEVERITY_LABELS = {
+  alta: "Alta",
+  media: "Média",
+  baixa: "Baixa",
 };
 
 function App() {
@@ -157,10 +171,11 @@ function App() {
       const result = await fetchIncidents({ signal });
       if (signal?.aborted || requestId !== localRequestIdRef.current) return;
 
-      setLocalFeed({
+      const nextFeed = {
         ...result,
         incidents: sortIncidentsByOccurredAt(result.incidents),
-      });
+      };
+      setLocalFeed((previous) => mergeLocalFeedResult(previous, nextFeed));
       if (showNotice) setNotice("Notícias locais atualizadas");
     } catch (error) {
       if (error?.name === "AbortError" || requestId !== localRequestIdRef.current) return;
@@ -407,7 +422,13 @@ function App() {
         </nav>
 
         <section className="screen-shell" id="dashboard-content" tabIndex="-1">
-          <ScreenHeading view={currentView} activeView={activeView} dashboard={dashboard} localFeed={localFeed} />
+          <ScreenHeading
+            view={currentView}
+            activeView={activeView}
+            dashboard={dashboard}
+            localFeed={localFeed}
+            location={location}
+          />
           <ScreenAlert state={getViewState(activeView, { dashboard, localFeed, loadError, localError, isLoading, isLocalLoading })} />
           {activeView === "overview" && <OverviewScreen dashboard={dashboard} localFeed={localFeed} />}
           {activeView === "weather" && (
@@ -436,8 +457,10 @@ function App() {
   );
 }
 
-function ScreenHeading({ view, activeView, dashboard, localFeed }) {
+function ScreenHeading({ view, activeView, dashboard, localFeed, location }) {
   const updatedAt = getViewUpdatedAt(activeView, dashboard, localFeed);
+  const selectedTimeZone = location.timezone === "auto" ? dashboard.weather?.timezone : location.timezone;
+  const timeZone = activeView === "weather" || activeView === "cptec" ? selectedTimeZone : "America/Sao_Paulo";
 
   return (
     <header className="screen-heading">
@@ -447,7 +470,7 @@ function ScreenHeading({ view, activeView, dashboard, localFeed }) {
       </div>
       <div className="screen-meta">
         <Globe2 size={16} />
-        <span>Atualizado {updatedAt ? formatTime(updatedAt) : "pendente"}</span>
+        <span>Atualizado {updatedAt ? formatTimeInZone(updatedAt, timeZone) : "pendente"}</span>
       </div>
     </header>
   );
@@ -474,7 +497,7 @@ function OverviewScreen({ dashboard, localFeed }) {
       <section className="data-section">
         <h3>Leitura rápida</h3>
         <div className="summary-list">
-          <SummaryLine icon={Thermometer} label="Open-Meteo" value={formatValue(current?.temperature, "C")} detail={current?.condition} />
+          <SummaryLine icon={Thermometer} label="Open-Meteo" value={formatValue(current?.temperature, " °C")} detail={current?.condition} />
           <SummaryLine icon={CloudRain} label="Chuva hoje" value={formatValue(today?.rainProbability, "%")} detail={`${formatValue(today?.precipitation, " mm")} previstos`} />
           <SummaryLine icon={Newspaper} label="Notícias locais" value={formatInteger(localFeed.incidents.length)} detail={latestLocal?.title ?? "Sem item local no filtro atual"} />
           <SummaryLine icon={Flame} label="Bolas de fogo" value={formatInteger(dashboard.fireballs.length)} detail="Registros recentes CNEOS" />
@@ -548,13 +571,13 @@ function WeatherScreen({ weather, location, search }) {
             <div className="weather-symbol">{current.isDay ? <Sun size={42} /> : <MoonStar size={42} />}</div>
             <div>
               <span>{buildLocationLabel(location)}</span>
-              <strong>{formatValue(current.temperature, "C")}</strong>
+              <strong>{formatValue(current.temperature, " °C")}</strong>
               <small>{current.condition}</small>
             </div>
           </div>
 
           <div className="data-table compact">
-            <InfoRow icon={Thermometer} label="Sensação" value={formatValue(current.apparentTemperature, "C")} />
+            <InfoRow icon={Thermometer} label="Sensação" value={formatValue(current.apparentTemperature, " °C")} />
             <InfoRow icon={Droplets} label="Umidade" value={formatValue(current.humidity, "%")} />
             <InfoRow icon={Wind} label="Vento" value={formatValue(current.windSpeed, " km/h")} />
             <InfoRow icon={Zap} label="Rajadas" value={formatValue(current.windGusts, " km/h")} />
@@ -566,17 +589,22 @@ function WeatherScreen({ weather, location, search }) {
         <section className="data-section chart-section">
           <h3>Próximas 24h</h3>
           {data.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d7dee8" />
-                <XAxis dataKey="hour" tickLine={false} axisLine={false} fontSize={12} />
-                <YAxis yAxisId="left" tickLine={false} axisLine={false} fontSize={12} width={32} />
-                <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} fontSize={12} width={32} />
-                <Tooltip />
-                <Area yAxisId="left" type="monotone" dataKey="temperature" name="Temp. C" stroke="#0f766e" fill="#ccfbf1" strokeWidth={2} />
-                <Area yAxisId="right" type="monotone" dataKey="rainProbability" name="Chuva %" stroke="#2563eb" fill="#dbeafe" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <>
+              <p className="chart-summary">{summarizeHourlyWeather(data)}</p>
+              <div className="chart-visual" aria-hidden="true">
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d7dee8" />
+                    <XAxis dataKey="hour" tickLine={false} axisLine={false} fontSize={12} />
+                    <YAxis yAxisId="left" tickLine={false} axisLine={false} fontSize={12} width={32} />
+                    <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} fontSize={12} width={32} />
+                    <Tooltip />
+                    <Area yAxisId="left" type="monotone" dataKey="temperature" name="Temperatura °C" stroke="#0f766e" fill="#ccfbf1" strokeWidth={2} />
+                    <Area yAxisId="right" type="monotone" dataKey="rainProbability" name="Chuva %" stroke="#2563eb" fill="#dbeafe" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </>
           ) : (
             <EmptyState text="Gráfico aguardando dados horários." compact />
           )}
@@ -613,7 +641,7 @@ function CptecScreen({ cptec, location }) {
             <span>{formatShortDate(day.date)}</span>
             <strong>{day.condition}</strong>
             <small>
-              {formatValue(day.min, "C")} / {formatValue(day.max, "C")} | UV {formatValue(day.uv)}
+              {formatValue(day.min, " °C")} / {formatValue(day.max, " °C")} | UV {formatValue(day.uv)}
             </small>
           </div>
         ))}
@@ -633,16 +661,20 @@ function LocalNewsScreen({ localFeed, isLoading }) {
       </div>
 
       {incidents.length === 0 ? (
-        <EmptyState text="As fontes locais responderam sem notícias/alertas filtrados para Marília-SP." />
+        <EmptyState
+          text={isLoading
+            ? "Consultando fontes locais..."
+            : "As fontes locais responderam sem notícias/alertas filtrados para Marília-SP."}
+        />
       ) : (
         <div className="news-list">
           {incidents.map((incident) => (
             <article className="news-row" key={incident.id}>
-              <span className={`severity-dot ${incident.severity}`} />
+              <span className={`severity-dot ${incident.severity}`} aria-hidden="true" />
               <div className="news-body">
                 <strong>{incident.title}</strong>
                 <small>
-                  {incident.source} | {INCIDENT_TYPE_LABELS[incident.type] ?? "Local"} | {incident.neighborhood} |{" "}
+                  {incident.source} | {INCIDENT_TYPE_LABELS[incident.type] ?? "Local"} | Severidade {SEVERITY_LABELS[incident.severity] ?? "não informada"} | {incident.neighborhood} |{" "}
                   {formatAge(getIncidentAgeMinutes(incident))}
                 </small>
                 {incident.detail && <p>{incident.detail}</p>}
@@ -671,15 +703,20 @@ function FireballScreen({ fireballs }) {
       <section className="data-section chart-section">
         <h3>Energia de impacto estimada</h3>
         {fireballs.length > 0 ? (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d7dee8" />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-              <YAxis tickLine={false} axisLine={false} fontSize={12} width={34} />
-              <Tooltip />
-              <Bar dataKey="energia" name="Impacto kt" fill="#d97706" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <>
+            <p className="chart-summary">{summarizeFireballs(fireballs)}</p>
+            <div className="chart-visual" aria-hidden="true">
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d7dee8" />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={34} />
+                  <Tooltip />
+                  <Bar dataKey="energia" name="Impacto kt" fill="#d97706" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
         ) : (
           <EmptyState text="API de bolas de fogo sem registros recentes no recorte atual." compact />
         )}
@@ -716,8 +753,11 @@ function SourceGroup({ title, sources, local = false }) {
   return (
     <section className="data-section">
       <h3>{title}</h3>
-      <div className="source-list">
-        {sources.map((source) => (
+      {sources.length === 0 ? (
+        <EmptyState text="Estado das fontes ainda não disponível." compact />
+      ) : (
+        <div className="source-list">
+          {sources.map((source) => (
           <article className="source-row" key={source.id}>
             <div>
               <strong>{source.label ?? source.name}</strong>
@@ -727,8 +767,9 @@ function SourceGroup({ title, sources, local = false }) {
               {SOURCE_LABELS[source.state ?? source.status] ?? (local ? source.cadence : "Fonte")}
             </span>
           </article>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -757,46 +798,6 @@ function getScreenTitle(id) {
   return titles[id] ?? "Painel";
 }
 
-const DASHBOARD_VIEW_SOURCE = {
-  weather: "weather",
-  cptec: "cptec",
-  fireballs: "fireballs",
-};
-
-function getViewState(activeView, ctx) {
-  const { dashboard, localFeed, loadError, localError, isLoading, isLocalLoading } = ctx;
-
-  if (activeView === "local") {
-    if (isLocalLoading) return { tone: "loading", message: "Atualizando notícias locais..." };
-    if (localError) return { tone: "error", message: localError };
-    if (localFeed.warnings.length > 0) return { tone: "warning", message: localFeed.warnings.slice(0, 2).join(" | ") };
-    return null;
-  }
-
-  if (activeView === "overview" || activeView === "sources") return null;
-
-  const sourceKey = DASHBOARD_VIEW_SOURCE[activeView];
-  if (!sourceKey) return null;
-
-  if (isLoading) return { tone: "loading", message: "Consultando fonte..." };
-  if (loadError) return { tone: "error", message: loadError };
-
-  const source = dashboard.sources.find((item) => item.id === sourceKey);
-  if (source?.state === "erro") {
-    return { tone: "error", message: source.detail || `${source.label}: falha ao consultar` };
-  }
-  if (source?.state === "cache") {
-    return { tone: "warning", message: source.detail || `${source.label}: exibindo dados em cache` };
-  }
-  if (source?.state === "indisponivel") {
-    return { tone: "warning", message: source.detail || `${source.label}: indisponível no navegador` };
-  }
-  if (source?.state === "sem-dados") {
-    return { tone: "warning", message: source.detail || `${source.label}: sem dados no recorte atual` };
-  }
-  return null;
-}
-
 function getViewUpdatedAt(activeView, dashboard, localFeed) {
   if (activeView === "local") return localFeed.fetchedAt;
   if (activeView === "overview" || activeView === "sources") {
@@ -822,12 +823,6 @@ function formatShortDate(value) {
   const date = new Date(value.includes("T") ? value : `${value}T12:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
-
-function formatTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "pendente";
-  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatDateTime(value) {

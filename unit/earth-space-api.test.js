@@ -32,6 +32,21 @@ test("public API URLs contain no private key", () => {
   urls.forEach((url) => assert.doesNotMatch(url, /api_key|apikey|token|secret/i));
 });
 
+test("Open-Meteo forecast request keeps automatic timezone and explicit public units", () => {
+  const url = new URL(
+    buildOpenMeteoForecastUrl({ ...DEFAULT_LOCATION, timezone: "auto" }),
+  );
+
+  assert.equal(url.hostname, "api.open-meteo.com");
+  assert.equal(url.searchParams.get("timezone"), "auto");
+  assert.equal(url.searchParams.get("wind_speed_unit"), "kmh");
+  assert.equal(url.searchParams.get("precipitation_unit"), "mm");
+  assert.equal(url.searchParams.get("forecast_days"), "7");
+  assert.match(url.searchParams.get("current"), /temperature_2m/);
+  assert.match(url.searchParams.get("hourly"), /precipitation_probability/);
+  assert.match(url.searchParams.get("daily"), /temperature_2m_max/);
+});
+
 test("geocoding payload becomes selectable locations", () => {
   const [place] = normalizeGeocodingResults({
     results: [
@@ -66,6 +81,7 @@ test("reverse geocoding never exposes coordinates in the location id", () => {
 test("weather payload is normalized for current, daily and hourly views", () => {
   const weather = normalizeWeatherPayload(
     {
+      timezone: "America/Manaus",
       current: {
         time: "2026-07-09T12:00",
         temperature_2m: 27.5,
@@ -96,10 +112,12 @@ test("weather payload is normalized for current, daily and hourly views", () => 
         wind_gusts_10m: [54],
       },
     },
-    DEFAULT_LOCATION,
+    { ...DEFAULT_LOCATION, timezone: "auto" },
   );
 
   assert.equal(weather.current.condition, "Tempestade");
+  assert.equal(weather.location.timezone, "auto");
+  assert.equal(weather.timezone, "America/Manaus");
   assert.equal(weather.current.temperature, 27.5);
   assert.equal(weather.daily[0].rainProbability, 80);
   assert.equal(weather.hourly[0].hour, "12:00");

@@ -555,6 +555,7 @@ export function normalizeWeatherPayload(payload, location = DEFAULT_LOCATION) {
 
   return {
     location,
+    timezone: normalizeText(payload?.timezone, location.timezone),
     current: {
       time: normalizeText(current.time),
       temperature: compactNumber(current.temperature_2m, 1),
