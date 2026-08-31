@@ -50,6 +50,7 @@ import {
   summarizeHourlyWeather,
 } from "./utils/dashboardState.js";
 import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./utils/incidents.js";
+import { assessHourlyWeatherRisk } from "./utils/weatherRisk.js";
 
 const EMPTY_DASHBOARD = {
   weather: null,
@@ -552,6 +553,7 @@ function LocationBar({ search }) {
 function WeatherScreen({ weather, location, search }) {
   const current = weather?.current;
   const data = weather?.hourly ?? [];
+  const risk = assessHourlyWeatherRisk(data);
 
   if (!current) {
     return (
@@ -566,6 +568,8 @@ function WeatherScreen({ weather, location, search }) {
     <>
       <LocationBar search={search} />
       <div className="screen-grid">
+        <WeatherRiskPanel risk={risk} />
+
         <section className="data-section weather-focus">
           <div className="weather-current">
             <div className="weather-symbol">{current.isDay ? <Sun size={42} /> : <MoonStar size={42} />}</div>
@@ -614,6 +618,61 @@ function WeatherScreen({ weather, location, search }) {
   );
 }
 
+function WeatherRiskPanel({ risk }) {
+  const levelLabel = {
+    alto: "Alto",
+    moderado: "Moderado",
+    baixo: "Baixo",
+    indisponivel: "Indisponível",
+  }[risk.level];
+
+  const metrics = [
+    ["Probabilidade máx. de chuva", formatValue(risk.maxRainProbability, "%")],
+    ["Precipitação acumulada", formatValue(risk.totalPrecipitation, " mm")],
+    ["Pico de precipitação", formatValue(risk.maxHourlyPrecipitation, " mm/h")],
+    ["Rajada máxima", formatValue(risk.maxGusts, " km/h")],
+    ["CAPE máximo", formatValue(risk.maxCape, " J/kg")],
+    ["Visibilidade mínima", formatValue(risk.minVisibilityKm, " km")],
+  ];
+
+  return (
+    <section className="data-section weather-risk-section" aria-labelledby="weather-risk-title">
+      <div className="risk-heading">
+        <div>
+          <h3 id="weather-risk-title">Estimativa de risco nas próximas 24h</h3>
+          <p>{risk.summary}</p>
+        </div>
+        <span className={`risk-badge ${risk.level}`}>Risco {levelLabel}</span>
+      </div>
+
+      <p className="risk-source-note">
+        Estimativa por modelo Open-Meteo; não substitui aviso oficial do INMET.
+      </p>
+
+      <dl className="risk-metrics">
+        {metrics.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {risk.reasons.length > 0 ? (
+        <ul className="risk-reasons">
+          {risk.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+        </ul>
+      ) : (
+        <p className="risk-reasons-empty">
+          {risk.level === "indisponivel"
+            ? "Aguardando dados horários suficientes para avaliar os sinais meteorológicos."
+            : "Nenhum sinal de atenção adicional foi identificado nos dados disponíveis."}
+        </p>
+      )}
+    </section>
+  );
+}
+
 function InfoRow({ icon: Icon, label, value }) {
   return (
     <div className="info-row">
@@ -632,7 +691,10 @@ function CptecScreen({ cptec, location }) {
   return (
     <section className="data-section">
       <div className="section-title">
-        <h3>{cptec.city ? `${cptec.city}-${cptec.uf}` : "Previsão nacional"}</h3>
+        <div>
+          <h3>{cptec.city ? `${cptec.city}-${cptec.uf}` : "Previsão nacional"}</h3>
+          <p className="source-provenance">Previsão complementar do CPTEC/INPE distribuída pela BrasilAPI.</p>
+        </div>
         <span>Atualização {cptec.updatedAt || "pendente"}</span>
       </div>
       <div className="data-table">

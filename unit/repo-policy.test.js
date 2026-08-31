@@ -129,7 +129,7 @@ test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () 
   }
 });
 
-test("cache versions v4 and v14 stay coherent between code and LGPD drafts", () => {
+test("cache versions v5 and v15 stay coherent between code and LGPD drafts", () => {
   const api = read("src/services/earthSpaceApi.js");
   const serviceWorker = read("public/sw.js");
   const versionedDrafts = [
@@ -138,13 +138,13 @@ test("cache versions v4 and v14 stay coherent between code and LGPD drafts", () 
     ".lgpd/policies/privacy-policy-v1.0-draft.md",
   ];
 
-  assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v4:`/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v14`/);
+  assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v5:`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v15`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   for (const file of versionedDrafts) {
     const content = read(file);
-    assert.match(content, /togs-cache:v4:/, `${file} must document localStorage v4`);
-    assert.match(content, /togs-heads-up-v14/, `${file} must document Cache Storage v14`);
+    assert.match(content, /togs-cache:v5:/, `${file} must document localStorage v5`);
+    assert.match(content, /togs-heads-up-v15/, `${file} must document Cache Storage v15`);
     assert.match(content, /togs-heads-up-v12/, `${file} must document the preserved legacy-scope v12 cache`);
     assert.doesNotMatch(content, /togs-cache:v3:/, `${file} must not document stale localStorage versions`);
   }
@@ -194,7 +194,7 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v14`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v15`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);
@@ -253,6 +253,10 @@ test("dashboard exposes textual states, units and chart summaries", () => {
   assert.match(app, /summarizeFireballs\(fireballs\)/);
   assert.match(app, /className="chart-visual" aria-hidden="true"/);
   assert.match(app, /Temperatura °C/);
+  assert.match(app, /Estimativa de risco nas próximas 24h/);
+  assert.match(app, /não substitui aviso oficial do INMET/);
+  assert.match(app, /Previsão complementar do CPTEC\/INPE distribuída pela BrasilAPI/);
+  assert.match(app, /<dl className="risk-metrics">/);
   assert.doesNotMatch(app, /formatValue\([^\n]+, "C"\)/);
   assert.match(
     app,
@@ -265,6 +269,7 @@ test("dashboard exposes textual states, units and chart summaries", () => {
     /location\.timezone === "auto" \? dashboard\.weather\?\.timezone : location\.timezone/,
   );
   assert.match(styles, /\.chart-summary\s*\{/);
+  assert.match(styles, /\.weather-risk-section\s*\{[^}]*grid-column:\s*1 \/ -1;/s);
 });
 
 test("service worker bypasses external APIs before asset caching", () => {
@@ -302,7 +307,8 @@ test("app is consult only and uses public APIs without private keys", () => {
   assert.match(app, /searchLocations/);
   assert.match(api, /api\.open-meteo\.com/);
   assert.match(api, /geocoding-api\.open-meteo\.com/);
-  assert.match(api, /servicos\.cptec\.inpe\.br/);
+  assert.match(api, /brasilapi\.com\.br\/api\/cptec\/v1/);
+  assert.doesNotMatch(api, /servicos\.cptec\.inpe\.br/);
   assert.match(api, /fireball\.api/);
   assert.doesNotMatch(api, /planetary\/apod|neo\/rest\/v1\/feed|cad\.api|mars-photos|api_key/i);
   assert.doesNotMatch(app, /NASA APOD|NASA NeoWs|JPL CAD|Fotos de Marte/);

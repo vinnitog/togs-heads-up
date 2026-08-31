@@ -66,8 +66,8 @@ test("earth and space URL builders stay on the approved keyless hosts", () => {
   assert.deepEqual(sorted(urls.map((url) => new URL(url).hostname)), [
     "api.bigdatacloud.net",
     "api.open-meteo.com",
+    "brasilapi.com.br",
     "geocoding-api.open-meteo.com",
-    "servicos.cptec.inpe.br",
     "ssd-api.jpl.nasa.gov",
   ]);
   urls.forEach((url) => assert.doesNotMatch(url, /api[_-]?key|apikey|client_secret|token=/i));
@@ -84,11 +84,11 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
     "api.open-meteo.com",
     "api.rss2json.com",
     "apiprevmet3.inmet.gov.br",
+    "brasilapi.com.br",
     "g1.globo.com",
     "geocoding-api.open-meteo.com",
     "open-meteo.com",
     "portal.inmet.gov.br",
-    "servicos.cptec.inpe.br",
     "ssd-api.jpl.nasa.gov",
     "www.giromarilia.com.br",
   ]);

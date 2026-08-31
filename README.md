@@ -1,14 +1,15 @@
 # Togs Heads Up
 
-Dashboard responsivo que reúne clima, previsão, alertas regionais de Marília-SP e registros públicos de bolas de fogo em uma única interface.
+Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, notícias regionais de Marília-SP e registros públicos de bolas de fogo em uma única interface.
 
 [Acessar demonstração](https://vinnitog.github.io/togs-heads-up/)
 
 ## Destaques
 
-- clima atual e previsão horária pelo Open-Meteo;
+- clima atual, previsão horária e estimativa de risco para as próximas 24 horas pelo Open-Meteo;
 - busca de cidades e geolocalização opcional;
-- previsão nacional complementar do CPTEC/INPE;
+- previsão nacional complementar do CPTEC/INPE, distribuída pela BrasilAPI;
+- avisos meteorológicos oficiais do INMET, quando o endpoint público responde;
 - notícias e alertas de Marília-SP filtrados de fontes públicas;
 - registros de bolas de fogo da NASA/JPL;
 - funcionamento como PWA, com shell disponível offline;
@@ -32,7 +33,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-O app funciona sem chave privada. O arquivo `.env.example` documenta apenas a troca opcional do proxy público usado por fontes sem CORS.
+O app funciona sem chave privada. O arquivo `.env.example` documenta apenas o proxy opcional usado pela fonte NASA/JPL, que não oferece CORS ao navegador.
 
 ## Validar
 
@@ -47,14 +48,16 @@ O comando executa testes unitários e o build de produção.
 
 | Fonte | Uso | Observação |
 |---|---|---|
-| Open-Meteo | clima e busca de cidades | gratuita, sem chave e com CORS |
+| Open-Meteo | clima, busca de cidades e risco estimado em 24 h | gratuita, sem chave e com CORS; não é aviso oficial |
 | BigDataCloud | nome do local após geolocalização | consulta pública, sem chave |
-| CPTEC/INPE | previsão nacional | acessada por proxy público por não oferecer CORS |
-| INMET | avisos meteorológicos | fonte pública oficial |
+| CPTEC/INPE via BrasilAPI | previsão nacional complementar | gratuita, sem chave e com CORS; Marília usa o código 3159 |
+| INMET | avisos meteorológicos oficiais | endpoint público instável; falha isolada do restante do painel |
 | G1 Bauru e Marília / Giro Marília | notícias regionais | feeds RSS convertidos para JSON |
 | NASA/JPL CNEOS | bolas de fogo | fonte pública acessada por proxy |
 
 As integrações degradam de forma independente: a falha de uma fonte não bloqueia o restante do painel.
+
+O painel diferencia procedência: **INMET** é a fonte de avisos oficiais; **Open-Meteo** produz somente uma estimativa baseada em previsão numérica. Métricas, limitações e fontes planejadas estão em [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md).
 
 ## Privacidade
 

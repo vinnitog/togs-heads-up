@@ -194,6 +194,33 @@ test("fetchIncidents consults real default public APIs without env setup", async
   assert.equal(result.sources.find((source) => source.id === "g1-bauru-marilia").status, "conectado");
 });
 
+test("estimated Open-Meteo risk is not described as an official or real alert", async () => {
+  const result = await fetchIncidents({
+    fetchImpl: async (url) => {
+      if (url.includes("api.open-meteo.com")) {
+        return {
+          ok: true,
+          json: async () => ({
+            current: {
+              time: "2026-08-30T14:00",
+              weather_code: 95,
+              precipitation: 12,
+              wind_gusts_10m: 70,
+            },
+          }),
+        };
+      }
+
+      return { ok: true, json: async () => ({ items: [], hoje: [], amanha: [] }) };
+    },
+  });
+
+  const openMeteo = result.sources.find((source) => source.id === "open-meteo");
+  assert.equal(openMeteo.status, "conectado");
+  assert.match(openMeteo.detail, /estimativa/i);
+  assert.doesNotMatch(openMeteo.detail, /alerta\(s\) real/i);
+});
+
 test("source statuses list only configured public endpoints", () => {
   const statuses = getSourceStatuses();
 

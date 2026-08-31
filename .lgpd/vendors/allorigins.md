@@ -1,8 +1,8 @@
 # Terceiro — AllOrigins
 
 - **Entidade**: instância pública do projeto open source AllOrigins; operador jurídico da instância não identificado.
-- **Finalidade**: contornar ausência de CORS para CPTEC e JPL.
-- **Dados**: IP/metadados do visitante, URL-alvo e nome de cidade quando CPTEC é consultado; não recebe coordenadas exatas.
+- **Finalidade**: contornar ausência de CORS para a fonte pública NASA/JPL.
+- **Dados**: IP/metadados do visitante e URL-alvo global da consulta JPL; não recebe coordenadas nem texto de busca.
 - **Tier**: Médio. **Revisão**: anual ou imediata se mantido.
 - **Papel preliminar**: proxy/suboperador informal.
 - **DPA, política, retenção, subprocessadores, país e SLA**: não publicados para a instância usada.

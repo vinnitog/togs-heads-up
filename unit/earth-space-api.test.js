@@ -7,13 +7,14 @@ import {
   buildGeocodingUrl,
   buildOpenMeteoForecastUrl,
   fetchEarthSpaceDashboard,
-  normalizeCptecCitySearchXml,
-  normalizeCptecForecastXml,
+  normalizeBrasilApiCptecCities,
+  normalizeBrasilApiCptecForecast,
   normalizeFireballPayload,
   normalizeGeocodingResults,
   normalizeReverseGeocodingResult,
   normalizeWeatherPayload,
   resolveLocationFromCoords,
+  selectBrasilApiCptecCity,
 } from "../src/services/earthSpaceApi.js";
 
 test("public API URLs contain no private key", () => {
@@ -27,7 +28,7 @@ test("public API URLs contain no private key", () => {
   assert.match(urls[0], /api\.open-meteo\.com/);
   assert.match(urls[0], /latitude=-22\.2171/);
   assert.match(urls[1], /geocoding-api\.open-meteo\.com/);
-  assert.match(urls[2], /servicos\.cptec\.inpe\.br/);
+  assert.match(urls[2], /brasilapi\.com\.br\/api\/cptec\/v1\/clima\/previsao\/3159\/6/);
   assert.match(urls[3], /ssd-api\.jpl\.nasa\.gov\/fireball\.api/);
   urls.forEach((url) => assert.doesNotMatch(url, /api_key|apikey|token|secret/i));
 });
@@ -44,6 +45,9 @@ test("Open-Meteo forecast request keeps automatic timezone and explicit public u
   assert.equal(url.searchParams.get("forecast_days"), "7");
   assert.match(url.searchParams.get("current"), /temperature_2m/);
   assert.match(url.searchParams.get("hourly"), /precipitation_probability/);
+  for (const field of ["rain", "showers", "weather_code", "cape", "visibility", "wind_gusts_10m"]) {
+    assert.match(url.searchParams.get("hourly"), new RegExp(`(^|,)${field}(,|$)`));
+  }
   assert.match(url.searchParams.get("daily"), /temperature_2m_max/);
 });
 
@@ -104,12 +108,17 @@ test("weather payload is normalized for current, daily and hourly views", () => 
         sunset: ["2026-07-09T17:42"],
       },
       hourly: {
-        time: ["2026-07-09T12:00"],
-        temperature_2m: [27.5],
-        precipitation_probability: [78],
-        precipitation: [2],
-        cloud_cover: [88],
-        wind_gusts_10m: [54],
+        time: ["2026-07-09T10:00", "2026-07-09T11:00", "2026-07-09T12:00", "2026-07-09T13:00"],
+        temperature_2m: [25, 26, 27.5, 28],
+        precipitation_probability: [10, 20, 78, 82],
+        precipitation: [0, 0, 2, 4],
+        rain: [0, 0, 1, 2],
+        showers: [0, 0, 1, 2],
+        weather_code: [0, 1, 95, 96],
+        cape: [200, 400, 1800, 2200],
+        visibility: [30000, 25000, 4000, 1800],
+        cloud_cover: [20, 40, 88, 95],
+        wind_gusts_10m: [20, 30, 54, 76],
       },
     },
     { ...DEFAULT_LOCATION, timezone: "auto" },
@@ -120,26 +129,92 @@ test("weather payload is normalized for current, daily and hourly views", () => 
   assert.equal(weather.timezone, "America/Manaus");
   assert.equal(weather.current.temperature, 27.5);
   assert.equal(weather.daily[0].rainProbability, 80);
-  assert.equal(weather.hourly[0].hour, "12:00");
+  assert.deepEqual(weather.hourly.map((item) => item.hour), ["12:00", "13:00"]);
+  assert.equal(weather.hourly[0].cape, 1800);
+  assert.equal(weather.hourly[1].visibility, 1800);
+  assert.equal(weather.hourly[1].weatherCode, 96);
 });
 
-test("CPTEC XML search and forecast are normalized without placeholder days", () => {
-  const cities = normalizeCptecCitySearchXml(
-    "<cidades><cidade><nome>Marilia</nome><uf>SP</uf><id>244</id></cidade></cidades>",
+test("weather normalization keeps exactly the next 24 hourly entries", () => {
+  const times = Array.from({ length: 26 }, (_, index) =>
+    new Date(Date.UTC(2026, 7, 30, 12 + index)).toISOString().slice(0, 16),
   );
-  const forecast = normalizeCptecForecastXml(`
-    <cidade>
-      <nome>Marilia</nome><uf>SP</uf><atualizacao>2026-07-09</atualizacao>
-      <previsao><dia>2026-07-09</dia><tempo>pn</tempo><maxima>28</maxima><minima>16</minima><iuv>5.0</iuv></previsao>
-      <previsao><dia>null</dia><tempo></tempo><maxima></maxima><minima></minima><iuv></iuv></previsao>
-    </cidade>
-  `);
+  const weather = normalizeWeatherPayload(
+    {
+      current: { time: "2026-08-30T12:15" },
+      hourly: { time: times },
+    },
+    DEFAULT_LOCATION,
+  );
 
-  assert.equal(cities[0].id, "244");
-  assert.equal(forecast.city, "Marilia");
+  assert.equal(weather.hourly.length, 24);
+  assert.equal(weather.hourly[0].time, "2026-08-30T13:00");
+  assert.equal(weather.hourly.at(-1).time, "2026-08-31T12:00");
+  assert.ok(!weather.hourly.some((hour) => hour.time === "2026-08-31T13:00"));
+});
+
+test("BrasilAPI CPTEC keeps Marilia city 3159 and normalizes its public forecast", () => {
+  const cities = normalizeBrasilApiCptecCities([
+    { nome: "Marília", estado: "SP", id: 3159, regiao: "Sudeste" },
+  ]);
+  const forecast = normalizeBrasilApiCptecForecast({
+    cidade: "Marília",
+    estado: "SP",
+    atualizado_em: "2026-08-30",
+    clima: [
+      { data: "2026-08-31", condicao: "pn", condicao_desc: "Parcialmente Nublado", min: 20, max: 34, indice_uv: 0 },
+      { data: "inválida", condicao: "", condicao_desc: "", min: null, max: null, indice_uv: null },
+    ],
+  });
+
+  assert.equal(DEFAULT_LOCATION.cptecId, "3159");
+  assert.equal(cities[0].id, "3159");
+  assert.equal(forecast.city, "Marília");
   assert.equal(forecast.days.length, 1);
-  assert.equal(forecast.days[0].condition, "Parcialmente nublado");
-  assert.equal(forecast.days[0].uv, 5);
+  assert.equal(forecast.days[0].condition, "Parcialmente Nublado");
+  assert.equal(forecast.days[0].max, 34);
+});
+
+test("missing weather and CPTEC measurements stay null instead of becoming zero", () => {
+  const weather = normalizeWeatherPayload(
+    {
+      current: { time: "2026-08-30T10:15" },
+      daily: {},
+      hourly: { time: ["2026-08-30T11:00"] },
+    },
+    DEFAULT_LOCATION,
+  );
+  const forecast = normalizeBrasilApiCptecForecast({
+    cidade: "Marília",
+    estado: "SP",
+    clima: [
+      {
+        data: "2026-08-31",
+        condicao: "",
+        condicao_desc: "",
+        min: "",
+        max: null,
+        indice_uv: undefined,
+      },
+    ],
+  });
+
+  assert.equal(weather.hourly[0].visibility, null);
+  assert.equal(weather.hourly[0].precipitation, null);
+  assert.equal(forecast.days[0].min, null);
+  assert.equal(forecast.days[0].max, null);
+  assert.equal(forecast.days[0].uv, null);
+});
+
+test("CPTEC city selection requires the requested Brazilian city and state", () => {
+  const cities = normalizeBrasilApiCptecCities([
+    { nome: "Bom Jesus", estado: "PI", id: 101 },
+    { nome: "Bom Jesus", estado: "SP", id: 202 },
+  ]);
+
+  assert.equal(selectBrasilApiCptecCity(cities, { name: "Bom Jesus", admin1: "São Paulo" }).id, "202");
+  assert.equal(selectBrasilApiCptecCity(cities, { name: "Bom Jesus", admin1: "Bahia" }), null);
+  assert.equal(selectBrasilApiCptecCity(cities, { name: "Outra cidade", admin1: "São Paulo" }), null);
 });
 
 test("fireball payload maps NASA/JPL field arrays", () => {
@@ -184,11 +259,31 @@ function createDashboardFetch(requestedUrls = []) {
       };
     }
 
-    if (decodedUrl.includes("servicos.cptec.inpe.br")) {
-      const xml = "<cidade><nome>Marilia</nome><uf>SP</uf><atualizacao>2026-08-22</atualizacao><previsao><dia>2026-08-23</dia><tempo>pn</tempo><maxima>27</maxima><minima>16</minima><iuv>5</iuv></previsao></cidade>";
+    if (decodedUrl.includes("brasilapi.com.br/api/cptec/v1/cidade/")) {
       return {
         ok: true,
-        arrayBuffer: async () => new TextEncoder().encode(xml).buffer,
+        json: async () => [{ nome: "Marília", estado: "SP", id: 3159 }],
+      };
+    }
+
+    if (decodedUrl.includes("brasilapi.com.br/api/cptec/v1/clima/previsao/")) {
+      return {
+        ok: true,
+        json: async () => ({
+          cidade: "Marília",
+          estado: "SP",
+          atualizado_em: "2026-08-22",
+          clima: [
+            {
+              data: "2026-08-23",
+              condicao: "pn",
+              condicao_desc: "Parcialmente Nublado",
+              max: 27,
+              min: 16,
+              indice_uv: 5,
+            },
+          ],
+        }),
       };
     }
 
@@ -206,9 +301,9 @@ function createDashboardFetch(requestedUrls = []) {
 const CACHE_TEST_NOW = Date.parse("2026-08-23T15:00:00.000Z");
 const DEFAULT_LOCATION_SCOPE = `${DEFAULT_LOCATION.latitude},${DEFAULT_LOCATION.longitude}`;
 const CACHE_KEYS = {
-  weather: `togs-cache:v4:weather:${DEFAULT_LOCATION_SCOPE}`,
-  cptec: `togs-cache:v4:cptec:${DEFAULT_LOCATION_SCOPE}`,
-  fireballs: "togs-cache:v4:fireballs:global",
+  weather: `togs-cache:v5:weather:${DEFAULT_LOCATION_SCOPE}`,
+  cptec: `togs-cache:v5:cptec:${DEFAULT_LOCATION_SCOPE}`,
+  fireballs: "togs-cache:v5:fireballs:global",
 };
 const CACHED_DASHBOARD_VALUES = {
   weather: { current: { temperature: 18 }, daily: [], hourly: [] },
@@ -339,7 +434,7 @@ test("failed refresh uses cache just below 24h but rejects it at exactly 24h", a
       },
     });
 
-    assert.deepEqual(expiredResult.sources.map((source) => source.state), ["erro", "indisponivel", "indisponivel"]);
+    assert.deepEqual(expiredResult.sources.map((source) => source.state), ["erro", "erro", "indisponivel"]);
     assert.equal(expiredStorage.values.size, 0);
   });
 });
@@ -365,17 +460,18 @@ test("precise geolocation is never persisted in dashboard cache", async () => {
 test("dashboard physically removes legacy, malformed, future and expired cache entries", async () => {
   const storage = createStorage();
   storage.values.set("togs-cache:v3:weather:legacy", JSON.stringify({ storedAt: Date.now(), value: {} }));
-  storage.values.set("togs-cache:v4:weather:malformed", "not-json");
+  storage.values.set("togs-cache:v4:weather:legacy", JSON.stringify({ storedAt: Date.now(), value: {} }));
+  storage.values.set("togs-cache:v5:weather:malformed", "not-json");
   storage.values.set(
-    "togs-cache:v4:weather:invalid-timestamp",
+    "togs-cache:v5:weather:invalid-timestamp",
     JSON.stringify({ storedAt: "not-a-timestamp", value: {} }),
   );
   storage.values.set(
-    "togs-cache:v4:weather:future",
+    "togs-cache:v5:weather:future",
     JSON.stringify({ storedAt: Date.now() + 25 * 60 * 60 * 1000, value: {} }),
   );
   storage.values.set(
-    "togs-cache:v4:weather:expired",
+    "togs-cache:v5:weather:expired",
     JSON.stringify({ storedAt: Date.now() - 25 * 60 * 60 * 1000, value: {} }),
   );
   storage.values.set("unrelated:key", "preserve");
@@ -383,12 +479,13 @@ test("dashboard physically removes legacy, malformed, future and expired cache e
   await fetchEarthSpaceDashboard({ fetchImpl: createDashboardFetch(), storage });
 
   assert.equal(storage.values.has("togs-cache:v3:weather:legacy"), false);
-  assert.equal(storage.values.has("togs-cache:v4:weather:malformed"), false);
-  assert.equal(storage.values.has("togs-cache:v4:weather:invalid-timestamp"), false);
-  assert.equal(storage.values.has("togs-cache:v4:weather:future"), false);
-  assert.equal(storage.values.has("togs-cache:v4:weather:expired"), false);
+  assert.equal(storage.values.has("togs-cache:v4:weather:legacy"), false);
+  assert.equal(storage.values.has("togs-cache:v5:weather:malformed"), false);
+  assert.equal(storage.values.has("togs-cache:v5:weather:invalid-timestamp"), false);
+  assert.equal(storage.values.has("togs-cache:v5:weather:future"), false);
+  assert.equal(storage.values.has("togs-cache:v5:weather:expired"), false);
   assert.equal(storage.values.get("unrelated:key"), "preserve");
-  assert.ok([...storage.values.keys()].filter((key) => key.startsWith("togs-cache:v4:")).length === 3);
+  assert.ok([...storage.values.keys()].filter((key) => key.startsWith("togs-cache:v5:")).length === 3);
 });
 
 test("dashboard still loads when any Storage API operation is blocked by the browser", async (t) => {
@@ -412,7 +509,7 @@ test("dashboard still loads when any Storage API operation is blocked by the bro
         key() {
           calls.key += 1;
           if (blockedOperation === "key") throw new DOMException("Storage access denied", "SecurityError");
-          return blockedOperation === "removeItem" ? "togs-cache:v3:legacy" : "togs-cache:v4:weather:probe";
+          return blockedOperation === "removeItem" ? "togs-cache:v4:legacy" : "togs-cache:v5:weather:probe";
         },
         get length() {
           calls.length += 1;
@@ -429,7 +526,7 @@ test("dashboard still loads when any Storage API operation is blocked by the bro
   }
 });
 
-test("proxy-dependent sources degrade without blocking weather", async () => {
+test("independent source failures degrade without blocking weather", async () => {
   const result = await fetchEarthSpaceDashboard({
     storage: createStorage(),
     fetchImpl: async (url) => {
@@ -441,8 +538,37 @@ test("proxy-dependent sources degrade without blocking weather", async () => {
   });
 
   assert.equal(result.weather.current.temperature, 20);
-  assert.equal(result.sources.find((source) => source.id === "cptec").state, "indisponivel");
+  assert.equal(result.sources.find((source) => source.id === "cptec").state, "erro");
   assert.equal(result.sources.find((source) => source.id === "fireballs").state, "indisponivel");
+});
+
+test("CPTEC response without valid forecast days is exposed as empty without blocking weather", async () => {
+  const result = await fetchEarthSpaceDashboard({
+    storage: createStorage(),
+    env: { VITE_CORS_PROXY: "" },
+    fetchImpl: async (url) => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        if (url.includes("api.open-meteo.com")) {
+          return {
+            timezone: "America/Sao_Paulo",
+            current: { time: "2026-08-30T12:00", temperature_2m: 20 },
+            daily: { time: [] },
+            hourly: { time: [] },
+          };
+        }
+        if (url.includes("brasilapi.com.br")) {
+          return { cidade: "Marília", estado: "SP", atualizado_em: "2026-08-30", clima: [] };
+        }
+        return { fields: [], data: [] };
+      },
+    }),
+  });
+
+  assert.equal(result.weather.current.temperature, 20);
+  assert.equal(result.cptec, null);
+  assert.equal(result.sources.find((source) => source.id === "cptec").state, "sem-dados");
 });
 
 test("reverse geocoding falls back to coordinates when naming fails", async () => {

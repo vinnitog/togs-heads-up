@@ -43,14 +43,14 @@ Sem esses campos, esta política não atende à identificação e ao contato exi
 - **Dados**: texto pesquisado, cidade selecionada, coordenadas públicas da cidade e metadados técnicos.
 - **Finalidade**: localizar a cidade solicitada e exibir previsão.
 - **Base pretendida**: legítimo interesse (LGPD, arts. 7º, IX, e 10), conforme teste de balanceamento.
-- **Destinatários atuais**: Open-Meteo; CPTEC/INPE por meio do AllOrigins quando aplicável.
+- **Destinatários atuais**: Open-Meteo e BrasilAPI, que distribui a previsão pública do CPTEC/INPE quando aplicável.
 
 ### 2.3 Clima, notícias, alertas e eventos espaciais
 
 - **Dados**: solicitações técnicas e conteúdo público retornado pelas fontes.
 - **Finalidade**: compor as seções do dashboard.
 - **Base pretendida**: legítimo interesse (LGPD, arts. 7º, IX, e 10) quando houver dado pessoal no contexto do controlador.
-- **Destinatários/fontes atuais**: Open-Meteo, INMET, RSS2JSON, AllOrigins, CPTEC/INPE e NASA/JPL. G1 e Giro Marília fornecem feeds buscados pelo RSS2JSON.
+- **Destinatários/fontes atuais**: Open-Meteo, INMET, RSS2JSON, BrasilAPI, CPTEC/INPE, AllOrigins e NASA/JPL. G1 e Giro Marília fornecem feeds buscados pelo RSS2JSON; AllOrigins é usado somente para JPL.
 - O app não cria perfis das pessoas eventualmente citadas nas notícias.
 
 ### 2.4 Cache funcional/PWA
@@ -72,9 +72,9 @@ Sem esses campos, esta política não atende à identificação e ao contato exi
 | Dado | Onde | Duração no app |
 |---|---|---|
 | coordenadas opcionais | memória/estado do navegador | sessão ativa; eliminadas ao desativar/recarregar |
-| clima de cidade | `localStorage` `togs-cache:v4:*` | fresco por 15 min; fallback até 24 h; remoção na primeira carga posterior |
-| CPTEC/fireballs | `localStorage` `togs-cache:v4:*` | fresco por 3 h; fallback até 24 h; remoção na primeira carga posterior |
-| shell PWA | Cache Storage `togs-heads-up-v14` | até atualização ou limpeza do navegador |
+| clima de cidade | `localStorage` `togs-cache:v5:*` | fresco por 15 min; fallback até 24 h; remoção na primeira carga posterior |
+| CPTEC/fireballs | `localStorage` `togs-cache:v5:*` | fresco por 3 h; fallback até 24 h; remoção na primeira carga posterior |
+| shell PWA | Cache Storage `togs-heads-up-v15` | até atualização ou limpeza do navegador |
 | shell PWA legado | Cache Storage `togs-heads-up-v12` | preservado durante a migração do endereço antigo; até limpeza/reinstalação |
 | notícias/alertas | memória da sessão | até fechar/recarregar |
 
@@ -86,7 +86,8 @@ Open-Meteo declara logs individuais por 90 dias, que podem conter coordenadas. O
 |---|---|---|---|
 | Open-Meteo | geocodificação/clima | Suíça | cidade com ressalvas; posição exata pendente |
 | BigDataCloud | nomear posição exata | Austrália; dados também em EUA | reprovado/remover |
-| AllOrigins | proxy CPTEC/JPL | não confirmado | reprovado/remover |
+| BrasilAPI | distribuir previsão CPTEC | Brasil | avaliação contratual pendente |
+| AllOrigins | proxy JPL | não confirmado | reprovado/remover |
 | RSS2JSON | converter feeds | não confirmado; política cita analytics nos EUA | reprovado/remover |
 | GitHub | Pages, repositório e CI | EUA e subprocessadores globais | aprovado com ressalvas |
 | INMET e CPTEC/INPE | dados meteorológicos públicos | Brasil | fontes públicas |

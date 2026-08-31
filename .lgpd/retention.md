@@ -11,11 +11,11 @@
 | Dado/storage | Retenção | Término/eliminação | Base/finalidade |
 |---|---|---|---|
 | Coordenadas `geo-*` | somente sessão ativa | removidas do estado ao desativar/recarregar; nunca persistidas | consentimento; clima local |
-| Clima de cidade — `togs-cache:v4:weather:*` | fresco por 15 min; fallback até 24 h | remoção física ao abrir/atualizar o dashboard após 24 h | legítimo interesse; desempenho/resiliência |
-| CPTEC — `togs-cache:v4:cptec:*` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
-| Fireballs — `togs-cache:v4:fireballs:global` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
+| Clima de cidade — `togs-cache:v5:weather:*` | fresco por 15 min; fallback até 24 h | remoção física ao abrir/atualizar o dashboard após 24 h | legítimo interesse; desempenho/resiliência |
+| CPTEC — `togs-cache:v5:cptec:*` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
+| Fireballs — `togs-cache:v5:fireballs:global` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
 | Namespaces antigos/malformados `togs-cache:*` | nenhum | removidos na próxima carga do dashboard | minimização e qualidade |
-| Shell PWA `togs-heads-up-v14` | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
+| Shell PWA `togs-heads-up-v15` | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
 | Shell legado `togs-heads-up-v12` | migração do antigo escopo `/Togs-heads-up/` | preservado até limpeza/reinstalação do navegador para não quebrar a PWA antiga | continuidade offline durante o rename |
 | Notícias/alertas | sessão | descartados ao fechar/recarregar | exibição de fontes públicas |
 
