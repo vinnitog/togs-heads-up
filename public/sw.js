@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "togs-heads-up-";
-const CACHE_NAME = `${CACHE_PREFIX}v14`;
+const CACHE_NAME = `${CACHE_PREFIX}v15`;
 // A v12 pertence ao escopo antigo /Togs-heads-up/. Cache Storage e compartilhado
 // por origem, entao apaga-la aqui quebraria o shell offline da instalacao antiga.
 const LEGACY_SCOPE_CACHE_NAME = `${CACHE_PREFIX}v12`;

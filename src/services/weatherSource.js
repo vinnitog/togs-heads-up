@@ -70,22 +70,38 @@ export function buildOpenMeteoUrl({ lat, lng } = MARILIA_COORDS) {
 // Descritor pronto para ser adicionado a INCIDENT_API_SOURCES.
 export const OPEN_METEO_SOURCE = {
   id: "open-meteo",
-  name: "Open-Meteo (tempo real)",
+  name: "Open-Meteo — risco estimado",
   cadence: "15 min",
   url: buildOpenMeteoUrl(),
   parser: "openmeteo",
   detail:
-    "Condição meteorológica observada/prevista para Marília-SP via Open-Meteo (gratuita, sem chave, CORS). Gera alerta em chuva forte, tempestade ou vento intenso.",
+    "Condição meteorológica observada/prevista para Marília-SP via Open-Meteo (gratuita, sem chave, CORS). Gera uma estimativa de risco em chuva forte, tempestade ou vento intenso; não é aviso oficial.",
 };
 
 function toFiniteNumber(value, fallback = 0) {
+  if (value === null || value === undefined || (typeof value === "string" && value.trim() === "")) {
+    return fallback;
+  }
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
 }
 
-function parseTimestamp(value) {
+function formatUtcOffset(value) {
+  const parsed = value === null || value === undefined || value === "" ? Number.NaN : Number(value);
+  const offsetSeconds = Number.isFinite(parsed) ? parsed : -3 * 60 * 60;
+  const totalMinutes = Math.trunc(Math.abs(offsetSeconds) / 60);
+  const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const minutes = String(totalMinutes % 60).padStart(2, "0");
+  return `${offsetSeconds >= 0 ? "+" : "-"}${hours}:${minutes}`;
+}
+
+function parseTimestamp(value, utcOffsetSeconds) {
   if (!value) return new Date().toISOString();
-  const date = new Date(value);
+  const raw = String(value).trim();
+  const timestamp = /(?:Z|[+-]\d{2}:\d{2})$/i.test(raw)
+    ? raw
+    : `${raw}${formatUtcOffset(utcOffsetSeconds)}`;
+  const date = new Date(timestamp);
   return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
@@ -126,13 +142,13 @@ export function normalizeOpenMeteoPayload(payload, source = OPEN_METEO_SOURCE) {
 
   const description = describeWeather(code, precipitation, gusts);
   const severity = classifySeverity(code, precipitation, gusts);
-  const occurredAt = parseTimestamp(current.time);
+  const occurredAt = parseTimestamp(current.time, payload.utc_offset_seconds);
 
   const detailParts = [];
   if (precipitation > 0) detailParts.push(`Precipitação ${precipitation.toFixed(1)} mm`);
   if (gusts > 0) detailParts.push(`Rajadas ${Math.round(gusts)} km/h`);
   if (wind > 0) detailParts.push(`Vento ${Math.round(wind)} km/h`);
-  if (Number.isFinite(temperature)) detailParts.push(`Temp. ${temperature.toFixed(1)} C`);
+  if (Number.isFinite(temperature)) detailParts.push(`Temp. ${temperature.toFixed(1)} °C`);
 
   return [
     {

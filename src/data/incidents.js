@@ -24,7 +24,7 @@ export const INCIDENT_API_SOURCES = [
   },
   {
     id: "inmet-alertas",
-    name: "INMET Avisos Meteorológicos",
+    name: "INMET — avisos oficiais",
     cadence: "operacional",
     url: "https://apiprevmet3.inmet.gov.br/avisos/ativos",
     parser: "inmet",

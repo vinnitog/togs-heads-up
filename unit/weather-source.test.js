@@ -24,6 +24,7 @@ test("clear weather produces no incident", () => {
 
 test("thunderstorm is normalized as a high severity weather risk", () => {
   const [incident] = normalizeOpenMeteoPayload({
+    utc_offset_seconds: 19800,
     current: {
       time: "2026-06-27T18:00",
       weather_code: 95,
@@ -40,6 +41,7 @@ test("thunderstorm is normalized as a high severity weather risk", () => {
   assert.equal(incident.status, "ativo");
   assert.equal(incident.location, "Marília-SP");
   assert.equal(incident.source, OPEN_METEO_SOURCE.name);
+  assert.equal(incident.occurredAt, "2026-06-27T12:30:00.000Z");
   assert.match(incident.title, /Tempestade/);
   assert.match(incident.detail, /Precipitação 12\.4 mm/);
   assert.match(incident.detail, /Rajadas 70 km\/h/);
@@ -48,12 +50,22 @@ test("thunderstorm is normalized as a high severity weather risk", () => {
 
 test("strong wind gusts alone trigger a medium severity alert", () => {
   const [incident] = normalizeOpenMeteoPayload({
-    current: { time: "2026-06-27T18:00", weather_code: 1, precipitation: 0, wind_gusts_10m: 65, wind_speed_10m: 40 },
+    utc_offset_seconds: null,
+    current: {
+      time: "2026-06-27T18:00",
+      weather_code: 1,
+      precipitation: 0,
+      wind_gusts_10m: 65,
+      wind_speed_10m: 40,
+      temperature_2m: null,
+    },
   });
 
   assert.ok(incident);
   assert.equal(incident.severity, "media");
+  assert.equal(incident.occurredAt, "2026-06-27T21:00:00.000Z");
   assert.match(incident.detail, /Rajadas 65 km\/h/);
+  assert.doesNotMatch(incident.detail, /Temp\./);
 });
 
 test("light rain is kept as a low severity advisory", () => {

@@ -647,7 +647,9 @@ export async function fetchIncidents({
         status: response.value.incidents.length > 0 ? "conectado" : "sem-dados",
         detail:
           response.value.incidents.length > 0
-            ? `${response.value.incidents.length} alerta(s) real(is) recebido(s).`
+            ? response.value.source.parser === "openmeteo"
+              ? `${response.value.incidents.length} estimativa(s) meteorológica(s) recebida(s); não é aviso oficial.`
+              : `${response.value.incidents.length} item(ns) público(s) recebido(s).`
             : "API respondeu, mas não retornou alertas para Marília-SP.",
       });
       continue;

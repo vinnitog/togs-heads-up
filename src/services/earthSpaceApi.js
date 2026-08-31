@@ -7,14 +7,14 @@ export const DEFAULT_LOCATION = {
   latitude: -22.2171,
   longitude: -49.9501,
   timezone: "America/Sao_Paulo",
-  cptecId: "244",
+  cptecId: "3159",
 };
 
 const DEFAULT_TIMEOUT_MS = 12000;
 // Requisicoes via proxy de CORS falham mais rapido: um proxy publico lento
 // nao deve segurar o painel inteiro por 12s antes de cair para erro/cache.
 const PROXY_TIMEOUT_MS = 8000;
-const CPTEC_BASE_URL = "https://servicos.cptec.inpe.br/XML";
+const BRASIL_API_CPTEC_BASE_URL = "https://brasilapi.com.br/api/cptec/v1";
 const JPL_SSD_BASE_URL = "https://ssd-api.jpl.nasa.gov";
 
 // Cache local (localStorage) para evitar rate limit e falhas transitorias.
@@ -23,7 +23,7 @@ const JPL_SSD_BASE_URL = "https://ssd-api.jpl.nasa.gov";
 // A versao do prefixo invalida caches antigos quando o formato ou o parsing
 // muda (ex.: XML do CPTEC salvo com acentos quebrados na v1).
 const CACHE_NAMESPACE = "togs-cache:";
-const CACHE_PREFIX = `${CACHE_NAMESPACE}v4:`;
+const CACHE_PREFIX = `${CACHE_NAMESPACE}v5:`;
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
@@ -37,7 +37,7 @@ const CACHE_TTL_MS = {
 const CACHE_STALE_MAX_MS = 24 * HOUR;
 
 // Proxy de CORS para fontes que nao enviam Access-Control-Allow-Origin
-// (CPTEC/INPE e JPL SSD). Configuravel via VITE_CORS_PROXY; use {url} como
+// (JPL SSD). Configuravel via VITE_CORS_PROXY; use {url} como
 // marcador do endpoint alvo. Padrao: allorigins (GET publico, sem chave).
 const DEFAULT_CORS_PROXY = "https://api.allorigins.win/raw?url={url}";
 
@@ -181,84 +181,24 @@ const WMO_DESCRIPTIONS = {
   99: "Tempestade severa",
 };
 
-const CPTEC_DESCRIPTIONS = {
-  ec: "Encoberto com chuva isolada",
-  ci: "Chuvas isoladas",
-  c: "Chuva",
-  in: "Instável",
-  pp: "Possibilidade de pancadas",
-  cm: "Chuva pela manhã",
-  cn: "Chuva à noite",
-  pt: "Pancadas à tarde",
-  pm: "Pancadas pela manhã",
-  np: "Nublado com pancadas",
-  pc: "Pancadas de chuva",
-  pn: "Parcialmente nublado",
-  cv: "Chuvisco",
-  ch: "Chuvoso",
-  t: "Tempestade",
-  ps: "Predomínio de sol",
-  e: "Encoberto",
-  n: "Nublado",
-  cl: "Céu claro",
-  nv: "Nevoeiro",
-  g: "Geada",
-  ne: "Neve",
-  nd: "Não definido",
-  pnt: "Pancadas à noite",
-  psc: "Possibilidade de chuva",
-  pcm: "Possibilidade de chuva pela manhã",
-  pct: "Possibilidade de chuva à tarde",
-  pcn: "Possibilidade de chuva à noite",
-  npt: "Nublado com pancadas à tarde",
-  npn: "Nublado com pancadas à noite",
-  ncn: "Nublado com chuva à noite",
-  nct: "Nublado com chuva à tarde",
-  ncm: "Nublado com chuva pela manhã",
-  npm: "Nublado com pancadas pela manhã",
-  npp: "Nublado com possibilidade de chuva",
-  vn: "Variação de nebulosidade",
-  ct: "Chuva à tarde",
-  ppn: "Possibilidade de pancadas à noite",
-  ppt: "Possibilidade de pancadas à tarde",
-  ppm: "Possibilidade de pancadas pela manhã",
-};
-
-const BRAZIL_STATE_CODES = {
-  acre: "AC",
-  alagoas: "AL",
-  amapa: "AP",
-  amazonas: "AM",
-  bahia: "BA",
-  ceara: "CE",
-  "distrito federal": "DF",
-  "espirito santo": "ES",
-  goias: "GO",
-  maranhao: "MA",
-  "mato grosso": "MT",
-  "mato grosso do sul": "MS",
-  "minas gerais": "MG",
-  para: "PA",
-  paraiba: "PB",
-  parana: "PR",
-  pernambuco: "PE",
-  piaui: "PI",
-  "rio de janeiro": "RJ",
-  "rio grande do norte": "RN",
-  "rio grande do sul": "RS",
-  rondonia: "RO",
-  roraima: "RR",
-  "santa catarina": "SC",
-  "sao paulo": "SP",
-  sergipe: "SE",
-  tocantins: "TO",
-};
+const BRAZIL_STATE_CODES = new Map([
+  ["acre", "AC"], ["alagoas", "AL"], ["amapa", "AP"], ["amazonas", "AM"],
+  ["bahia", "BA"], ["ceara", "CE"], ["distrito federal", "DF"], ["espirito santo", "ES"],
+  ["goias", "GO"], ["maranhao", "MA"], ["mato grosso", "MT"], ["mato grosso do sul", "MS"],
+  ["minas gerais", "MG"], ["para", "PA"], ["paraiba", "PB"], ["parana", "PR"],
+  ["pernambuco", "PE"], ["piaui", "PI"], ["rio de janeiro", "RJ"], ["rio grande do norte", "RN"],
+  ["rio grande do sul", "RS"], ["rondonia", "RO"], ["roraima", "RR"], ["santa catarina", "SC"],
+  ["sao paulo", "SP"], ["sergipe", "SE"], ["tocantins", "TO"],
+]);
 
 function readViteEnv() {
   return typeof import.meta !== "undefined" && import.meta.env ? import.meta.env : {};
 }
 
 function toFiniteNumber(value, fallback = null) {
+  if (value === null || value === undefined || (typeof value === "string" && value.trim() === "")) {
+    return fallback;
+  }
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -326,15 +266,10 @@ async function rawRequest(url, { fetchImpl, signal, timeoutMs, accept }) {
 
 // Hosts conhecidos por nao enviarem cabecalhos CORS: vao direto pelo proxy,
 // evitando o erro de CORS ruidoso no console antes de um fallback.
-const NO_CORS_HOSTS = ["servicos.cptec.inpe.br", "ssd-api.jpl.nasa.gov"];
+const NO_CORS_HOSTS = ["ssd-api.jpl.nasa.gov"];
 
 function needsProxy(url) {
   return NO_CORS_HOSTS.some((host) => url.includes(host));
-}
-
-// Erro de rede/CORS chega como TypeError sem status HTTP.
-function isNetworkError(error) {
-  return Boolean(error) && error.name !== "AbortError" && error.status === undefined;
 }
 
 async function request(url, options) {
@@ -345,21 +280,15 @@ async function request(url, options) {
     timeoutMs: Math.min(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, PROXY_TIMEOUT_MS),
   };
 
-  // Fontes sem CORS (CPTEC/JPL): so pelo proxy. Tentar direto sempre falha por
+  // Fontes sem CORS (JPL): so pelo proxy. Tentar direto sempre falha por
   // CORS, poluindo o console e disparando retry a toa, entao nem tentamos.
   if (needsProxy(url) && proxied && proxied !== url) {
     return rawRequest(proxied, proxyOptions);
   }
 
-  // Demais fontes: direto, com fallback para o proxy so em erro de rede/CORS.
-  try {
-    return await rawRequest(url, options);
-  } catch (error) {
-    if (isNetworkError(error) && proxied && proxied !== url) {
-      return rawRequest(proxied, proxyOptions);
-    }
-    throw error;
-  }
+  // Fontes com CORS sao consultadas diretamente. Assim o proxy opcional nunca
+  // recebe cidade, coordenadas ou consultas de clima.
+  return rawRequest(url, options);
 }
 
 async function fetchJson(url, options) {
@@ -368,52 +297,8 @@ async function fetchJson(url, options) {
   return JSON.parse(await response.text());
 }
 
-function decodeWith(label, buffer) {
-  try {
-    return new TextDecoder(label).decode(buffer);
-  } catch {
-    return new TextDecoder("utf-8").decode(buffer);
-  }
-}
-
-// A declaracao do XML (<?xml ... encoding="ISO-8859-1"?>) e ASCII puro, entao
-// pode ser lida com qualquer decoder de byte unico antes de escolher o correto.
-function readDeclaredEncoding(buffer) {
-  const head = decodeWith("iso-8859-1", buffer.slice(0, 200));
-  const match = head.match(/<\?xml[^>]*encoding=["']([^"']+)["']/i);
-  return match ? match[1].toLocaleLowerCase("en-US") : "";
-}
-
-// O CPTEC serve XML em ISO-8859-1, mas o proxy de CORS nao repassa o charset
-// original. Sem isso, response.text() decodifica como UTF-8 e os acentos viram
-// U+FFFD ("Sao Paulo" -> "S?o Paulo").
-function decodeXmlBytes(buffer) {
-  const declared = readDeclaredEncoding(buffer);
-  if (declared && !declared.startsWith("utf")) return decodeWith(declared, buffer);
-
-  const utf8 = decodeWith("utf-8", buffer);
-  if (!utf8.includes("�")) return utf8;
-
-  return decodeWith("iso-8859-1", buffer);
-}
-
-async function fetchText(url, options) {
-  const response = await request(url, { ...options, accept: "application/xml,text/xml,text/plain" });
-
-  if (typeof response.arrayBuffer === "function" && typeof TextDecoder === "function") {
-    return decodeXmlBytes(await response.arrayBuffer());
-  }
-
-  if (typeof response.text === "function") return response.text();
-  return "";
-}
-
 function getWeatherDescription(code) {
   return WMO_DESCRIPTIONS[Math.round(Number(code))] ?? "Condição variável";
-}
-
-function getCptecDescription(code) {
-  return CPTEC_DESCRIPTIONS[normalizeText(code).toLocaleLowerCase("pt-BR")] ?? "Condição não informada";
 }
 
 function readIndexed(source, index, fallback = null) {
@@ -422,24 +307,6 @@ function readIndexed(source, index, fallback = null) {
 
 function indexOfField(fields, name) {
   return Array.isArray(fields) ? fields.indexOf(name) : -1;
-}
-
-function decodeXml(value) {
-  return normalizeText(value)
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
-}
-
-function getXmlTag(block, tag) {
-  const match = String(block).match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "i"));
-  return decodeXml(match?.[1] ?? "");
-}
-
-function getXmlBlocks(xml, tag) {
-  return [...String(xml).matchAll(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "gi"))].map((match) => match[1]);
 }
 
 function createSourceStatus(id, label, state, detail) {
@@ -474,7 +341,8 @@ export function buildOpenMeteoForecastUrl(location = DEFAULT_LOCATION) {
     longitude: String(location.longitude),
     current:
       "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
-    hourly: "temperature_2m,precipitation_probability,precipitation,cloud_cover,wind_gusts_10m",
+    hourly:
+      "temperature_2m,precipitation_probability,precipitation,rain,showers,weather_code,cape,visibility,cloud_cover,wind_gusts_10m",
     daily:
       "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,uv_index_max,wind_speed_10m_max,sunrise,sunset",
     wind_speed_unit: "kmh",
@@ -523,11 +391,11 @@ export function normalizeReverseGeocodingResult(payload, { latitude, longitude }
 }
 
 export function buildCptecCitySearchUrl(query) {
-  return `${CPTEC_BASE_URL}/listaCidades?city=${encodeURIComponent(normalizeText(query))}`;
+  return `${BRASIL_API_CPTEC_BASE_URL}/cidade/${encodeURIComponent(normalizeText(query))}`;
 }
 
-export function buildCptecForecastUrl(cityId = DEFAULT_LOCATION.cptecId) {
-  return `${CPTEC_BASE_URL}/cidade/${encodeURIComponent(cityId)}/previsao.xml`;
+export function buildCptecForecastUrl(cityId = DEFAULT_LOCATION.cptecId, days = 6) {
+  return `${BRASIL_API_CPTEC_BASE_URL}/clima/previsao/${encodeURIComponent(cityId)}/${days}`;
 }
 
 export function buildFireballUrl(limit = 8) {
@@ -552,6 +420,12 @@ export function normalizeWeatherPayload(payload, location = DEFAULT_LOCATION) {
   const current = payload?.current ?? {};
   const daily = payload?.daily ?? {};
   const hourly = payload?.hourly ?? {};
+
+  const hourlyTimes = Array.isArray(hourly.time) ? hourly.time : [];
+  const currentTime = normalizeText(current.time);
+  const nextHourIndex = currentTime ? hourlyTimes.findIndex((time) => normalizeText(time) >= currentTime) : 0;
+  const startIndex = nextHourIndex >= 0 ? nextHourIndex : 0;
+  const nextHours = hourlyTimes.slice(startIndex, startIndex + 24);
 
   return {
     location,
@@ -584,56 +458,65 @@ export function normalizeWeatherPayload(payload, location = DEFAULT_LOCATION) {
       sunrise: normalizeText(readIndexed(daily.sunrise, index)),
       sunset: normalizeText(readIndexed(daily.sunset, index)),
     })),
-    hourly: (hourly.time ?? []).slice(0, 24).map((time, index) => ({
-      time,
-      hour: normalizeText(time).slice(11, 16),
-      temperature: compactNumber(readIndexed(hourly.temperature_2m, index), 1),
-      rainProbability: compactNumber(readIndexed(hourly.precipitation_probability, index)),
-      precipitation: compactNumber(readIndexed(hourly.precipitation, index), 1),
-      cloudCover: compactNumber(readIndexed(hourly.cloud_cover, index)),
-      gusts: compactNumber(readIndexed(hourly.wind_gusts_10m, index)),
-    })),
+    hourly: nextHours.map((time, offset) => {
+      const index = startIndex + offset;
+      return {
+        time,
+        hour: normalizeText(time).slice(11, 16),
+        temperature: compactNumber(readIndexed(hourly.temperature_2m, index), 1),
+        rainProbability: compactNumber(readIndexed(hourly.precipitation_probability, index)),
+        precipitation: compactNumber(readIndexed(hourly.precipitation, index), 1),
+        rain: compactNumber(readIndexed(hourly.rain, index), 1),
+        showers: compactNumber(readIndexed(hourly.showers, index), 1),
+        weatherCode: compactNumber(readIndexed(hourly.weather_code, index)),
+        cape: compactNumber(readIndexed(hourly.cape, index)),
+        visibility: compactNumber(readIndexed(hourly.visibility, index)),
+        cloudCover: compactNumber(readIndexed(hourly.cloud_cover, index)),
+        gusts: compactNumber(readIndexed(hourly.wind_gusts_10m, index)),
+      };
+    }),
   };
 }
 
-export function normalizeCptecCitySearchXml(xml) {
-  return getXmlBlocks(xml, "cidade").map((block) => ({
-    id: getXmlTag(block, "id"),
-    name: getXmlTag(block, "nome"),
-    uf: getXmlTag(block, "uf"),
+export function normalizeBrasilApiCptecCities(payload) {
+  return (Array.isArray(payload) ? payload : []).map((city) => ({
+    id: normalizeText(city.id),
+    name: normalizeText(city.nome),
+    uf: normalizeText(city.estado).toUpperCase(),
   }));
 }
 
-// Number("") e Number("null") nao servem aqui: o primeiro vira 0 (temperatura
-// falsa) e o segundo NaN. Campos vazios do CPTEC devem virar null.
-function readXmlNumber(block, tag) {
-  const raw = getXmlTag(block, tag);
-  return raw === "" || raw === "null" ? null : toFiniteNumber(raw);
+export function selectBrasilApiCptecCity(cities, location) {
+  const normalizedName = normalizeSearchText(location?.name);
+  const expectedUf = BRAZIL_STATE_CODES.get(normalizeSearchText(location?.admin1)) ?? normalizeText(location?.admin1).toUpperCase();
+  const exactName = (Array.isArray(cities) ? cities : []).filter(
+    (city) => normalizeSearchText(city.name) === normalizedName,
+  );
+
+  return exactName.find((city) => city.uf === expectedUf) ?? null;
 }
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-export function normalizeCptecForecastXml(xml) {
-  const cityBlock = String(xml);
-  const days = getXmlBlocks(xml, "previsao")
-    .map((block) => {
-      const code = getXmlTag(block, "tempo");
+export function normalizeBrasilApiCptecForecast(payload) {
+  const days = (Array.isArray(payload?.clima) ? payload.clima : [])
+    .map((day) => {
+      const code = normalizeText(day.condicao);
       return {
-        date: getXmlTag(block, "dia"),
+        date: normalizeText(day.data),
         code,
-        condition: getCptecDescription(code),
-        max: readXmlNumber(block, "maxima"),
-        min: readXmlNumber(block, "minima"),
-        uv: readXmlNumber(block, "iuv"),
+        condition: normalizeText(day.condicao_desc, "Condição não informada"),
+        max: toFiniteNumber(day.max),
+        min: toFiniteNumber(day.min),
+        uv: toFiniteNumber(day.indice_uv),
       };
     })
-    // O CPTEC as vezes devolve um bloco final sem dia/tempo ("<dia>null</dia>").
     .filter((day) => ISO_DATE_PATTERN.test(day.date));
 
   return {
-    city: getXmlTag(cityBlock, "nome"),
-    uf: getXmlTag(cityBlock, "uf"),
-    updatedAt: getXmlTag(cityBlock, "atualizacao"),
+    city: normalizeText(payload?.cidade),
+    uf: normalizeText(payload?.estado).toUpperCase(),
+    updatedAt: normalizeText(payload?.atualizado_em),
     days,
   };
 }
@@ -671,17 +554,17 @@ async function fetchCptecForecastForLocation(location, options) {
   }
 
   if (!cityId) {
-    const cityXml = await fetchText(buildCptecCitySearchUrl(location.name), options);
-    const cities = normalizeCptecCitySearchXml(cityXml);
-    const state = BRAZIL_STATE_CODES[normalizeSearchText(location.admin1)] ?? normalizeText(location.admin1).toUpperCase();
-    const city = cities.find((item) => normalizeText(item.uf).toUpperCase() === state) ?? cities[0];
+    const cityPayload = await fetchJson(buildCptecCitySearchUrl(location.name), options);
+    const cities = normalizeBrasilApiCptecCities(cityPayload);
+    const city = selectBrasilApiCptecCity(cities, location);
     cityId = city?.id;
   }
 
   if (!cityId) return null;
 
-  const forecastXml = await fetchText(buildCptecForecastUrl(cityId), options);
-  return normalizeCptecForecastXml(forecastXml);
+  const forecastPayload = await fetchJson(buildCptecForecastUrl(cityId), options);
+  const forecast = normalizeBrasilApiCptecForecast(forecastPayload);
+  return forecast.days.length > 0 ? forecast : null;
 }
 
 export async function searchLocations(query, { fetchImpl = globalThis.fetch, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
@@ -729,17 +612,16 @@ export async function fetchEarthSpaceDashboard({
   const tasks = [
     {
       key: "weather",
-      label: "Open-Meteo",
+      label: "Open-Meteo — previsão por modelo",
       scope: locationScope,
       cacheable: !storesPreciseLocation,
       run: async () => normalizeWeatherPayload(await fetchJson(buildOpenMeteoForecastUrl(location), options), location),
     },
     {
       key: "cptec",
-      label: "CPTEC/INPE",
+      label: "CPTEC/INPE via BrasilAPI",
       scope: locationScope,
       cacheable: !storesPreciseLocation,
-      proxyDependent: true,
       run: async () => fetchCptecForecastForLocation(location, options),
     },
     {
@@ -814,7 +696,7 @@ async function runDashboardTask(task, { storage, forceRefresh, signal }) {
       };
     }
 
-    // Fontes que dependem de proxy (CPTEC/JPL) degradam de forma suave: nao sao
+    // Fontes que dependem de proxy (JPL) degradam de forma suave: nao sao
     // um erro do app, e sim uma limitacao do navegador (sem CORS) ou do proxy.
     if (task.proxyDependent) {
       return {

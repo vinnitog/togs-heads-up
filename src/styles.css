@@ -562,6 +562,110 @@ input:focus-visible {
   min-height: 340px;
 }
 
+/* [UI] O risco ocupa a largura completa para separar a leitura preventiva dos detalhes do tempo. */
+.weather-risk-section {
+  grid-column: 1 / -1;
+}
+
+.risk-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.risk-heading h3 {
+  margin-bottom: 6px;
+}
+
+.risk-heading p,
+.risk-source-note,
+.risk-reasons-empty,
+.source-provenance {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.risk-badge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  color: #475467;
+  background: #eef2f7;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.risk-badge.baixo {
+  color: #0f766e;
+  background: var(--teal-soft);
+}
+
+.risk-badge.moderado {
+  color: #92400e;
+  background: var(--amber-soft);
+}
+
+.risk-badge.alto {
+  color: #991b1b;
+  background: var(--rose-soft);
+}
+
+.risk-source-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--blue-soft);
+  border-left: 4px solid var(--blue);
+  border-radius: 6px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.risk-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.risk-metrics > div {
+  min-width: 0;
+  padding: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.risk-metrics dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.risk-metrics dd {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.risk-reasons {
+  display: grid;
+  gap: 5px;
+  margin: 14px 0 0;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.risk-reasons-empty {
+  margin-top: 14px;
+}
+
+.source-provenance {
+  margin-top: 5px;
+  font-size: 0.82rem;
+}
+
 .chart-summary {
   margin: -4px 0 12px;
   color: var(--muted);
@@ -794,8 +898,13 @@ input:focus-visible {
 
   .screen-heading,
   .section-title,
+  .risk-heading,
   .weather-current {
     display: grid;
+  }
+
+  .risk-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .screen-meta {
@@ -848,6 +957,10 @@ input:focus-visible {
 
   .weather-current strong {
     font-size: 2.4rem;
+  }
+
+  .risk-metrics {
+    grid-template-columns: 1fr;
   }
 
   .weather-symbol {
