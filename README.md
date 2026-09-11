@@ -7,7 +7,7 @@ Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, no
 ## Destaques
 
 - clima atual, previsão horária e estimativa de risco para as próximas 24 horas pelo Open-Meteo;
-- painel OpenWeather opcional com clima atual, previsão de cinco dias, qualidade do ar e mapas meteorológicos;
+- painel OpenWeather automático com clima atual, previsão de cinco dias, qualidade do ar e mapas meteorológicos;
 - busca de cidades e geolocalização opcional;
 - previsão nacional complementar do CPTEC/INPE, distribuída pela BrasilAPI;
 - avisos meteorológicos oficiais do INMET, quando o endpoint público responde;
@@ -37,11 +37,11 @@ npm.cmd run dev
 
 O painel principal funciona sem chave. O arquivo `.env.example` documenta o proxy opcional NASA/JPL e a integração OpenWeather.
 
-### OpenWeather opcional
+### OpenWeather automático
 
-No desenvolvimento local, configure `VITE_OPENWEATHER_API_KEY` em `.env.development.local`, arquivo ignorado pelo Git. Essa configuração é lida somente no modo de desenvolvimento e não deve ser movida para `.env.production` ou incluída em arquivos versionados.
+No desenvolvimento local, configure `VITE_OPENWEATHER_API_KEY` em `.env.development.local`, arquivo ignorado pelo Git. Para um build local, use `.env.production.local` ou a variável no ambiente do processo. Nunca inclua a chave real em arquivos versionados.
 
-Na versão publicada, abra **OpenWeather → Conectar OpenWeather** e informe sua própria chave. Ela fica no `sessionStorage` da aba e é removida pelo controle de desconexão; não é guardada no `localStorage`. A chave é enviada diretamente à OpenWeather nas consultas autenticadas e fica acessível ao próprio navegador, não a um proxy público.
+Na versão publicada, os dados carregam automaticamente com a chave do projeto: o GitHub Secret `OPENWEATHER_API_KEY` é injetado como `VITE_OPENWEATHER_API_KEY` durante o build. A publicação falha se o secret estiver ausente. O visitante não precisa informar uma chave. Por ser um app estático, a chave fica visível no JavaScript publicado, nas consultas do navegador e no cache do shell PWA. O secret protege a configuração no repositório, mas não oculta a chave no site. As chamadas autenticadas seguem diretamente para os domínios OpenWeather, sem proxy público.
 
 Uma consulta completa usa cinco endpoints: clima atual, previsão de cinco dias a cada três horas, ar atual, previsão do ar e histórico das últimas 24 horas. Busca de cidades/CEP, geocodificação reversa e tiles do mapa geram consultas adicionais. O cache de respostas é somente em memória, com validade de dez minutos. Os mapas carregam somente ao abrir a aba correspondente. One Call e produtos pagos não são utilizados; disponibilidade e limites seguem a conta OpenWeather.
 
@@ -59,7 +59,7 @@ O comando executa testes unitários e o build de produção.
 | Fonte | Uso | Observação |
 |---|---|---|
 | Open-Meteo | clima, busca de cidades e risco estimado em 24 h | gratuita, sem chave e com CORS; não é aviso oficial |
-| OpenWeather | clima, previsão 5 dias/3h, ar, geocodificação e cinco camadas de mapas | opcional, usa chave da sessão e produtos do plano gratuito |
+| OpenWeather | clima, previsão 5 dias/3h, ar, geocodificação e cinco camadas de mapas | automática, usa chave do projeto e produtos do plano gratuito |
 | OpenStreetMap | mapa-base | tiles consultados somente ao abrir o mapa |
 | BigDataCloud | nome do local após geolocalização sem chave OpenWeather | consulta pública, sem chave |
 | CPTEC/INPE via BrasilAPI | previsão nacional complementar | gratuita, sem chave e com CORS; Marília usa o código 3159 |
@@ -73,7 +73,7 @@ O painel diferencia procedência: **INMET** é a fonte de avisos oficiais; **Ope
 
 ## Privacidade
 
-O projeto não possui login, banco de dados, analytics ou cookies de rastreamento. A localização é opcional e só é solicitada após ação do usuário. Quando ativada, as coordenadas são enviadas ao Open-Meteo e, com uma chave conectada, à OpenWeather; sem chave, o nome do local é obtido pelo BigDataCloud. Coordenadas exatas não são persistidas no armazenamento do app nem enviadas a servidor próprio. Ao abrir mapas, OpenWeather e OpenStreetMap recebem pedidos dos tiles da região visualizada e metadados de rede. A chave segue somente para os domínios OpenWeather.
+O projeto não possui login, banco de dados, analytics ou cookies de rastreamento. A localização é opcional e só é solicitada após ação do usuário. Quando ativada, as coordenadas são enviadas ao Open-Meteo e à OpenWeather configurada no app; em ambientes sem chave, o nome do local é obtido pelo BigDataCloud. Coordenadas exatas não são persistidas no armazenamento do app nem enviadas a servidor próprio. Ao abrir mapas, OpenWeather e OpenStreetMap recebem pedidos dos tiles da região visualizada e metadados de rede. As chamadas autenticadas enviam a chave somente aos domínios OpenWeather; ela também faz parte do JavaScript hospedado no GitHub Pages e do shell offline.
 
 O diagnóstico técnico de privacidade e as pendências de governança estão documentados em [`.lgpd/`](.lgpd/). Esses documentos são uma referência de engenharia e não substituem revisão jurídica.
 

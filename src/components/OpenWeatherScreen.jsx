@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CloudSun, KeyRound, MapPin, RefreshCw, Search, Unplug } from "lucide-react";
+import { CloudSun, MapPin, RefreshCw, Search } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -8,8 +8,7 @@ import { buildOpenWeatherTileUrl, OPEN_WEATHER_MAP_LAYERS, searchOpenWeatherLoca
 import { AIR_QUALITY_LABELS, POLLUTANTS, formatOpenWeatherTime as time, formatOpenWeatherValue as value } from "../utils/openWeatherDisplay.js";
 import "./openWeather.css";
 
-export default function OpenWeatherScreen({ apiKey, onKeyChange, location, onLocationChange, data, loading, error, onRefresh }) {
-  const [draftKey, setDraftKey] = useState("");
+export default function OpenWeatherScreen({ apiKey, location, onLocationChange, data, loading, error, onRefresh }) {
   const [tab, setTab] = useState("current");
   const current = data?.current;
   const offset = data?.timezoneOffset;
@@ -19,18 +18,9 @@ export default function OpenWeatherScreen({ apiKey, onKeyChange, location, onLoc
         <h3><MapPin size={18} /> {buildLocationLabel(location)}</h3>
         <button className="icon-button" type="button" title="Atualizar OpenWeather" aria-label="Atualizar OpenWeather" disabled={!apiKey || loading} onClick={onRefresh}><RefreshCw size={18} className={loading ? "spin" : ""} /></button>
       </div>
-      <details className="ow-settings" open={!apiKey || undefined}>
-        <summary><KeyRound size={16} /> {apiKey ? "Chave configurada nesta sessão" : "Conectar OpenWeather"}</summary>
-        <form className="ow-controls" onSubmit={(event) => { event.preventDefault(); if (draftKey.trim()) { onKeyChange(draftKey); setDraftKey(""); } }}>
-          <label className="ow-key-label">Chave da API<input type="password" autoComplete="off" spellCheck={false} value={draftKey} onChange={(event) => setDraftKey(event.target.value)} required placeholder="API key" /></label>
-          <button className="search-button" type="submit"><KeyRound size={16} /> Conectar</button>
-          {apiKey && <button className="search-button" type="button" onClick={() => onKeyChange("")}><Unplug size={16} /> Desconectar</button>}
-        </form>
-        <p className="ow-caption">A chave fica nesta sessão do navegador e é enviada somente à OpenWeather. A localização consultada também é enviada ao provedor.</p>
-      </details>
       {apiKey && <LocationSearch key={apiKey} apiKey={apiKey} onSelect={onLocationChange} />}
       <div role="status" aria-live="polite" className="ow-caption">
-        {loading ? "Consultando OpenWeather…" : error || (data?.fetchedAt ? `Consulta: ${new Date(data.fetchedAt).toLocaleString("pt-BR")}` : "Aguardando conexão.")}
+        {!apiKey ? "OpenWeather temporariamente indisponível nesta versão." : loading ? "Consultando OpenWeather…" : error || (data?.fetchedAt ? `Consulta: ${new Date(data.fetchedAt).toLocaleString("pt-BR")}` : "Aguardando dados.")}
       </div>
       {apiKey && <>
         <div className="ow-tabs" role="group" aria-label="Dados OpenWeather">
@@ -120,7 +110,7 @@ function WeatherMap({ apiKey, location }) {
   useEffect(() => {
     setError("");
     const overlay = L.tileLayer(buildOpenWeatherTileUrl(layer, apiKey), { opacity: 0.8, keepBuffer: 0, updateWhenIdle: true, attribution: '<a href="https://openweathermap.org/">OpenWeather</a>' });
-    overlay.on("tileerror", () => setError("Camada meteorológica indisponível. Verifique a chave ou tente novamente mais tarde."));
+    overlay.on("tileerror", () => setError("Camada meteorológica indisponível. Tente novamente mais tarde."));
     overlay.addTo(mapRef.current);
     return () => { overlay.off(); overlay.remove(); };
   }, [layer, apiKey]);

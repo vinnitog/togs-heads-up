@@ -53,7 +53,7 @@ import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./u
 import { assessHourlyWeatherRisk } from "./utils/weatherRisk.js";
 import OpenWeatherScreen from "./components/OpenWeatherScreen.jsx";
 import { clearOpenWeatherCache, fetchOpenWeatherDashboard, reverseOpenWeatherLocation } from "./services/openWeatherApi.js";
-import { readOpenWeatherKey, saveOpenWeatherKey } from "./services/openWeatherSettings.js";
+import { readOpenWeatherKey } from "./services/openWeatherSettings.js";
 import { formatOpenWeatherValue } from "./utils/openWeatherDisplay.js";
 
 const EMPTY_DASHBOARD = {
@@ -124,7 +124,7 @@ function App() {
   const [locationQuery, setLocationQuery] = useState("Marília-SP");
   const [locationResults, setLocationResults] = useState([]);
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
-  const [openWeatherKey, setOpenWeatherKey] = useState(() => readOpenWeatherKey());
+  const openWeatherKey = readOpenWeatherKey();
   const [openWeather, setOpenWeather] = useState(null);
   const [openWeatherLoading, setOpenWeatherLoading] = useState(false);
   const [openWeatherError, setOpenWeatherError] = useState("");
@@ -161,13 +161,6 @@ function App() {
     }
     return () => controller.abort();
   }, [openWeatherKey, location, openWeatherRefresh]);
-
-  function changeOpenWeatherKey(value) {
-    clearOpenWeatherCache();
-    setOpenWeather(null);
-    setOpenWeatherKey(saveOpenWeatherKey(value));
-    setOpenWeatherRefresh((revision) => revision + 1);
-  }
 
   function refreshOpenWeather() {
     clearOpenWeatherCache();
@@ -421,7 +414,7 @@ function App() {
             <RefreshCw size={18} className={isLoading || isLocalLoading ? "spin" : ""} />
           </button>
           <p className="location-privacy">
-            Localização é opcional. Ao ativar, as coordenadas são enviadas ao Open-Meteo e, com a chave conectada, à OpenWeather; sem chave, ao BigDataCloud. Mapas usam OpenStreetMap.
+            Localização é opcional. Ao ativar, as coordenadas são enviadas ao Open-Meteo, à OpenWeather e, quando necessário, ao BigDataCloud para consultar o clima e identificar o local. Mapas usam OpenStreetMap.
           </p>
         </div>
       </header>
@@ -477,7 +470,7 @@ function App() {
           />}
           <ScreenAlert state={getViewState(activeView, { dashboard, localFeed, loadError, localError, isLoading, isLocalLoading })} />
           {activeView === "overview" && <><OverviewScreen dashboard={dashboard} localFeed={localFeed} />{openWeatherKey && <section className="data-section"><h3>OpenWeather</h3><SummaryLine icon={CloudSun} label={location.name} value={formatOpenWeatherValue(openWeather?.current?.temp, " °C")} detail={openWeatherLoading ? "Consultando..." : openWeatherError || openWeather?.current?.description} /><button className="search-button" type="button" onClick={() => selectView("openweather")}>Ver OpenWeather</button></section>}</>}
-          {activeView === "openweather" && <OpenWeatherScreen apiKey={openWeatherKey} onKeyChange={changeOpenWeatherKey} location={location} onLocationChange={selectLocation} data={openWeather} loading={openWeatherLoading} error={openWeatherError} onRefresh={refreshOpenWeather} />}
+          {activeView === "openweather" && <OpenWeatherScreen apiKey={openWeatherKey} location={location} onLocationChange={selectLocation} data={openWeather} loading={openWeatherLoading} error={openWeatherError} onRefresh={refreshOpenWeather} />}
           {activeView === "weather" && (
             <WeatherScreen
               weather={dashboard.weather}
@@ -495,7 +488,7 @@ function App() {
           {activeView === "cptec" && <CptecScreen cptec={dashboard.cptec} location={location} />}
           {activeView === "local" && <LocalNewsScreen localFeed={localFeed} isLoading={isLocalLoading} />}
           {activeView === "fireballs" && <FireballScreen fireballs={dashboard.fireballs} />}
-          {activeView === "sources" && <><SourcesScreen dashboard={dashboard} localFeed={localFeed} /><SourceGroup title="OpenWeather" sources={openWeather?.sources ?? [{ id: "openweather", label: "OpenWeather", state: openWeatherLoading ? "pendente" : "indisponivel", detail: openWeatherError || (openWeatherKey ? "Aguardando consulta" : "Conecte sua chave na tela OpenWeather") }]} /></>}
+          {activeView === "sources" && <><SourcesScreen dashboard={dashboard} localFeed={localFeed} /><SourceGroup title="OpenWeather" sources={openWeather?.sources ?? [{ id: "openweather", label: "OpenWeather", state: openWeatherLoading ? "pendente" : "indisponivel", detail: openWeatherError || (openWeatherKey ? "Aguardando consulta" : "OpenWeather temporariamente indisponível nesta versão.") }]} /></>}
         </section>
       </main>
 

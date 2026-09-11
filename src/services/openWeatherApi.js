@@ -29,7 +29,7 @@ function checkAborted(signal) {
 
 function requireApiKey(value) {
   const key = typeof value === "string" ? value.trim() : "";
-  if (!key) throw apiError("missing-key", "Configure sua chave OpenWeather para consultar esta fonte.");
+  if (!key) throw apiError("missing-key", "OpenWeather indisponivel: configuracao do servico ausente nesta versao.");
   return key;
 }
 
@@ -47,8 +47,8 @@ function coordinates(location) {
 }
 
 function responseError(status) {
-  if (status === 401) return apiError("unauthorized", "Chave OpenWeather invalida ou ainda nao ativada.");
-  if (status === 403) return apiError("forbidden", "Este recurso nao esta liberado para sua chave OpenWeather.");
+  if (status === 401) return apiError("unauthorized", "OpenWeather indisponivel: credencial do app invalida ou ainda nao ativada.");
+  if (status === 403) return apiError("forbidden", "Este recurso nao esta liberado para a configuracao OpenWeather do app.");
   if (status === 429) return apiError("rate-limit", "Limite de consultas OpenWeather atingido. Tente novamente mais tarde.");
   return apiError("response", "A OpenWeather nao conseguiu atender esta consulta.");
 }
