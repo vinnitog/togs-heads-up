@@ -39,7 +39,14 @@ jobs:
         run: npm test
 
       - name: Build
-        run: npm run build
+        env:
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+        run: |
+          if [[ -z "${VITE_OPENWEATHER_API_KEY//[[:space:]]/}" ]]; then
+            echo "::error::Configure the OPENWEATHER_API_KEY repository secret before publishing."
+            exit 1
+          fi
+          npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -77,5 +77,5 @@ test("real production build emits only resolvable lowercase app paths", async (t
     })
     .join("\n");
   assert.doesNotMatch(functionalOutput, new RegExp(LEGACY_BASE.replaceAll("/", "\\/")));
-  assert.ok(!functionalOutput.includes("OPENWEATHER_TEST_ONLY_SENTINEL_9137"), "development API key must not be emitted in any public asset");
+  assert.ok(bundleSource.includes("OPENWEATHER_TEST_ONLY_SENTINEL_9137"), "production JavaScript must include the configured key for automatic weather loading");
 });

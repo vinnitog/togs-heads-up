@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
@@ -10,6 +11,24 @@ const root = path.join(__dirname, "..");
 function read(file) {
   return fs.readFileSync(path.join(root, file), "utf8");
 }
+
+test("publishing injects the shared OpenWeather secret only in the guarded build step", () => {
+  const workflow = read(".github/workflows/deploy-pages.yml");
+  const buildStep = workflow.match(/      - name: Build\r?\n([\s\S]*?)(?=\r?\n      - name:|$)/)?.[1];
+  assert.ok(buildStep, "workflow must include a dedicated build step");
+  assert.match(buildStep, /env:\s*\r?\n\s+VITE_OPENWEATHER_API_KEY: \$\{\{ secrets\.OPENWEATHER_API_KEY \}\}/);
+  assert.equal((workflow.match(/secrets\.OPENWEATHER_API_KEY/g) ?? []).length, 1);
+  assert.match(buildStep, /if \[\[ -z "\$\{VITE_OPENWEATHER_API_KEY\/\/\[\[:space:\]\]\//);
+  assert.match(buildStep, /exit 1\s*\r?\n\s*fi\s*\r?\n\s*npm run build/);
+  assert.ok(buildStep.indexOf("exit 1") < buildStep.indexOf("npm run build"), "missing or whitespace-only configuration must fail before publishing");
+  assert.doesNotMatch(buildStep, /echo[^\r\n]*\$VITE_OPENWEATHER_API_KEY/);
+});
+
+test("local development and production configuration files remain ignored by Git", () => {
+  const files = [".env.development.local", ".env.production.local"];
+  const ignored = execFileSync("git", ["check-ignore", "--no-index", "--", ...files], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim().split(/\r?\n/);
+  assert.deepEqual(ignored, files);
+});
 
 function listFiles(directory) {
   return fs.readdirSync(path.join(root, directory), { withFileTypes: true }).flatMap((entry) => {
@@ -129,7 +148,7 @@ test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () 
   }
 });
 
-test("cache versions v5 and v16 stay coherent between code and LGPD drafts", () => {
+test("cache versions v5 and v17 stay coherent between code and LGPD drafts", () => {
   const api = read("src/services/earthSpaceApi.js");
   const serviceWorker = read("public/sw.js");
   const versionedDrafts = [
@@ -139,12 +158,12 @@ test("cache versions v5 and v16 stay coherent between code and LGPD drafts", () 
   ];
 
   assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v5:`/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v16`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v17`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   for (const file of versionedDrafts) {
     const content = read(file);
     assert.match(content, /togs-cache:v5:/, `${file} must document localStorage v5`);
-    assert.match(content, /togs-heads-up-v16/, `${file} must document Cache Storage v16`);
+    assert.match(content, /togs-heads-up-v17/, `${file} must document Cache Storage v17`);
     assert.match(content, /togs-heads-up-v12/, `${file} must document the preserved legacy-scope v12 cache`);
     assert.doesNotMatch(content, /togs-cache:v3:/, `${file} must not document stale localStorage versions`);
   }
@@ -194,7 +213,7 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v16`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v17`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);

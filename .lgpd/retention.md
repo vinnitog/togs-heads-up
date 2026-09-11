@@ -15,14 +15,14 @@
 | CPTEC — `togs-cache:v5:cptec:*` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
 | Fireballs — `togs-cache:v5:fireballs:global` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
 | Namespaces antigos/malformados `togs-cache:*` | nenhum | removidos na próxima carga do dashboard | minimização e qualidade |
-| Shell PWA `togs-heads-up-v16` | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
+| Shell PWA `togs-heads-up-v17`, incluindo JavaScript com chave OpenWeather do projeto | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
 | Shell legado `togs-heads-up-v12` | migração do antigo escopo `/Togs-heads-up/` | preservado até limpeza/reinstalação do navegador para não quebrar a PWA antiga | continuidade offline durante o rename |
 | Notícias/alertas | sessão | descartados ao fechar/recarregar | exibição de fontes públicas |
-| Chave OpenWeather — `sessionStorage` `togs-openweather-key` | sessão da aba; não usa `localStorage` | desconexão substitui a chave por valor vazio; fim da sessão elimina o storage, conforme navegador | conexão opcional; avaliação A004 pendente |
-| Respostas/URLs OpenWeather em memória, inclusive coordenadas e chave | validade lógica de 10 min; máximo 80 entradas | descarte ao desconectar, atualizar ou recarregar; substituição de entradas pelo limite. TTL não é cronômetro de eliminação física | consulta opcional e redução de chamadas; revisão das LIAs pendente |
+| Chave OpenWeather do projeto — configuração local/GitHub Secret e JavaScript publicado | configuração até remoção/rotação; cópias no shell até atualização/limpeza | nova configuração requer novo build; chave publicada permanece nas cópias existentes até substituição/limpeza | integração automática; avaliação A004 pendente |
+| Respostas/URLs OpenWeather em memória, inclusive coordenadas e chave | validade lógica de 10 min; máximo 80 entradas | descarte ao atualizar ou recarregar; substituição de entradas pelo limite. TTL não é cronômetro de eliminação física | consulta e redução de chamadas; revisão das LIAs pendente |
 | Tiles OpenWeather/OpenStreetMap | carregados somente com mapa aberto | não entram no Cache Storage do app; cache HTTP normal segue navegador/headers dos provedores | visualização da região selecionada |
 
-A chave local de desenvolvimento fica em `.env.development.local`, arquivo ignorado pelo Git, até remoção pelo desenvolvedor; não é parte do bundle público. Esse arquivo não contém dados de visitantes. A versão publicada solicita chave individual. Se `sessionStorage` estiver indisponível, a conexão permanece apenas em memória até recarregar.
+A chave local de desenvolvimento fica em `.env.development.local`, arquivo ignorado pelo Git, até remoção pelo desenvolvedor. A versão publicada recebe o GitHub Secret `OPENWEATHER_API_KEY` como `VITE_OPENWEATHER_API_KEY` no build; a chave fica visível no JavaScript/navegador e integra o cache do shell. Não há coleta ou armazenamento de chave fornecida pelo visitante. Valores da configuração antiga em `sessionStorage` são ignorados; o app não garante a eliminação dessas entradas legadas. A chave real não integra os arquivos versionados de configuração ou documentação.
 
 O app não impõe obrigação fiscal, trabalhista, bancária ou contratual que justifique retenção adicional. A retenção técnica termina quando a finalidade expira (LGPD, art. 15); as exceções do art. 16 não foram identificadas no runtime.
 

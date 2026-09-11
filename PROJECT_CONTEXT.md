@@ -6,7 +6,7 @@ Gerado em: 2026-06-26 12:33:09
 
 Aplicacao de uso pessoal para acompanhar clima terrestre, noticias locais de Marilia-SP, previsao nacional brasileira e eventos astronomicos/espaciais publicos, com Marilia-SP como local padrao.
 
-Atualizacao de integracoes: 11/09/2026. O painel OpenWeather opcional complementa o Open-Meteo com clima atual, previsao de cinco dias/3h, ar atual/previsto/historico de 24h, geocodificacao de cidade/CEP/reversa e cinco camadas Weather Maps 1.0 sobre OpenStreetMap via Leaflet. Mantida a stack React + Vite + Recharts; Leaflet cobre somente os mapas.
+Atualizacao de integracoes: 11/09/2026. O painel OpenWeather automatico complementa o Open-Meteo com clima atual, previsao de cinco dias/3h, ar atual/previsto/historico de 24h, geocodificacao de cidade/CEP/reversa e cinco camadas Weather Maps 1.0 sobre OpenStreetMap via Leaflet. Mantida a stack React + Vite + Recharts; Leaflet cobre somente os mapas.
 
 ## Objetivo
 
@@ -77,8 +77,8 @@ git diff --check
 - Manter documentacao de contexto versionada neste arquivo.
 - Escopo atual do app: "Clima da Terra + Noticias Locais + Monitor Espacial".
 - OpenWeather usa apenas produtos gratuitos; nao usa One Call nem assinatura paga. Cinco consultas de dados por atualizacao completa; geocodificacao e mapas geram chamadas adicionais.
-- Chave de desenvolvimento em `.env.development.local` (`VITE_OPENWEATHER_API_KEY`), sem versionamento nem inclusao no bundle publico. Producao usa chave individual em `sessionStorage`; respostas ficam em memoria com TTL de dez minutos.
+- Chave de desenvolvimento em `.env.development.local` (`VITE_OPENWEATHER_API_KEY`), sem versionamento. Producao injeta GitHub Secret `OPENWEATHER_API_KEY` como `VITE_OPENWEATHER_API_KEY` no build; dados carregam automaticamente, sem solicitar chave ao visitante. A chave compartilhada fica visivel no JavaScript/navegador e integra o cache do shell. Valores antigos em `sessionStorage` sao ignorados. Respostas ficam em memoria com TTL de dez minutos.
 - Mapas OpenWeather/OpenStreetMap carregam somente ao abrir a aba. Geolocalizacao com chave usa OpenWeather para nomear local e Open-Meteo para previsao; sem chave preserva BigDataCloud.
-- Shell PWA atual: `togs-heads-up-v16`; `togs-heads-up-v12` legado preservado. APIs autenticadas e tiles externos nao entram no Cache Storage do app.
+- Shell PWA atual: `togs-heads-up-v17`; `togs-heads-up-v12` legado preservado. O JavaScript com a chave integra o shell; respostas de APIs autenticadas e tiles externos nao entram no Cache Storage do app.
 - Documentos `.lgpd/` incluem o delta tecnico OpenWeather/OpenStreetMap; avaliacao dos novos terceiros e revisao juridica continuam pendentes, com politica em draft nao publicado.
 

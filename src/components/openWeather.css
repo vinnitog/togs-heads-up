@@ -7,12 +7,10 @@
 .ow-screen .icon-button { flex: 0 0 44px; color: var(--ink); background: var(--surface-muted); border-color: var(--border-strong); }
 .ow-screen button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 .ow-screen button svg, .ow-heading svg { flex-shrink: 0; }
-.ow-settings { padding: 14px 0; border-block: 1px solid var(--border); }
-.ow-settings summary, .ow-sources summary { cursor: pointer; padding: 8px 0; }
-.ow-settings summary svg { vertical-align: middle; margin-right: 6px; }
+.ow-sources summary { cursor: pointer; padding: 8px 0; }
 .ow-controls { align-items: end; margin: 12px 0; }
 .ow-controls label { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; min-width: 0; max-width: 100%; }
-.ow-key-label, .ow-query-label { flex: 1 1 240px; }
+.ow-query-label { flex: 1 1 240px; }
 .ow-controls input, .ow-controls select { width: 100%; min-height: 44px; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 1px solid var(--border-strong); border-radius: 6px; font: inherit; font-size: 1rem; }
 .ow-controls button, .ow-results button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
 .ow-results { display: flex; flex-wrap: wrap; gap: 8px; }

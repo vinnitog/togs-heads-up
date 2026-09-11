@@ -1,31 +1,44 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { readOpenWeatherKey, saveOpenWeatherKey } from "../src/services/openWeatherSettings.js";
+import { readOpenWeatherKey } from "../src/services/openWeatherSettings.js";
 import { AIR_QUALITY_LABELS, POLLUTANTS, formatOpenWeatherTime, formatOpenWeatherValue } from "../src/utils/openWeatherDisplay.js";
 
-function sessionStorage() {
-  const entries = new Map();
-  return { getItem: (key) => entries.get(key) ?? null, setItem: (key, value) => entries.set(key, value) };
-}
-
-test("session keys override development configuration and disconnect stays disconnected", () => {
-  const storage = sessionStorage();
-  const env = { DEV: true, VITE_OPENWEATHER_API_KEY: " development-test-key " };
-  assert.equal(readOpenWeatherKey(env, storage), "development-test-key");
-  assert.equal(saveOpenWeatherKey(" session-test-key ", storage), "session-test-key");
-  assert.equal(readOpenWeatherKey(env, storage), "session-test-key");
-  saveOpenWeatherKey("", storage);
-  assert.equal(readOpenWeatherKey(env, storage), "");
+test("automatic configuration uses a trimmed environment key in development and production", () => {
+  for (const DEV of [true, false]) {
+    assert.equal(readOpenWeatherKey({ DEV, VITE_OPENWEATHER_API_KEY: " automatic-test-key " }), "automatic-test-key");
+    for (const key of [undefined, null, "", " \t\n "]) {
+      assert.equal(readOpenWeatherKey({ DEV, VITE_OPENWEATHER_API_KEY: key }), "");
+    }
+  }
 });
 
-test("production never reads a development key and blocked storage keeps connection usable", () => {
-  const env = { DEV: false, VITE_OPENWEATHER_API_KEY: "development-test-key" };
-  const blocked = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); } };
-  assert.equal(readOpenWeatherKey(env, sessionStorage()), "");
-  assert.equal(readOpenWeatherKey(env, blocked), "");
-  assert.equal(saveOpenWeatherKey(" session-test-key ", blocked), "session-test-key");
-  assert.equal(saveOpenWeatherKey(undefined, blocked), "");
+test("legacy session values and blocked storage never interfere with automatic configuration", (t) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+  t.after(() => {
+    if (original) Object.defineProperty(globalThis, "sessionStorage", original);
+    else delete globalThis.sessionStorage;
+  });
+  for (const saved of ["", "malformed-old-key", null]) {
+    let reads = 0;
+    Object.defineProperty(globalThis, "sessionStorage", { configurable: true, value: { getItem() { reads++; return saved; } } });
+    assert.equal(readOpenWeatherKey({ VITE_OPENWEATHER_API_KEY: "automatic-test-key" }), "automatic-test-key");
+    assert.equal(reads, 0);
+  }
+  Object.defineProperty(globalThis, "sessionStorage", { configurable: true, get() { throw new Error("storage disabled"); } });
+  assert.equal(readOpenWeatherKey({ VITE_OPENWEATHER_API_KEY: "automatic-test-key" }), "automatic-test-key");
+  assert.equal(readOpenWeatherKey({}), "");
+});
+
+test("automatic weather loading needs no visitor key form and reports missing configuration", () => {
+  const screen = fs.readFileSync(new URL("../src/components/OpenWeatherScreen.jsx", import.meta.url), "utf8");
+  const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const settings = fs.readFileSync(new URL("../src/services/openWeatherSettings.js", import.meta.url), "utf8");
+  assert.doesNotMatch(`${screen}\n${app}\n${settings}`, /type="password"|onKeyChange|saveOpenWeatherKey|changeOpenWeatherKey|Conectar OpenWeather|Desconectar|Conecte sua chave/);
+  assert.match(app, /const openWeatherKey = readOpenWeatherKey\(\)/);
+  assert.match(app, /fetchOpenWeatherDashboard\(\{ location, apiKey: openWeatherKey, signal: controller.signal \}\)/);
+  assert.match(app, /\[openWeatherKey, location, openWeatherRefresh\]/);
+  assert.match(screen, /!apiKey \? "OpenWeather temporariamente indisponível nesta versão\."/);
 });
 
 test("weather displays distinguish absent values from zero", () => {
