@@ -51,6 +51,10 @@ import {
 } from "./utils/dashboardState.js";
 import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./utils/incidents.js";
 import { assessHourlyWeatherRisk } from "./utils/weatherRisk.js";
+import OpenWeatherScreen from "./components/OpenWeatherScreen.jsx";
+import { clearOpenWeatherCache, fetchOpenWeatherDashboard, reverseOpenWeatherLocation } from "./services/openWeatherApi.js";
+import { readOpenWeatherKey, saveOpenWeatherKey } from "./services/openWeatherSettings.js";
+import { formatOpenWeatherValue } from "./utils/openWeatherDisplay.js";
 
 const EMPTY_DASHBOARD = {
   weather: null,
@@ -74,6 +78,7 @@ const VIEW_GROUPS = [
     title: "Terra",
     items: [
       { id: "overview", label: "Resumo", icon: Activity },
+      { id: "openweather", label: "OpenWeather", icon: CloudSun },
       { id: "weather", label: "Open-Meteo", icon: CloudSun },
       { id: "cptec", label: "CPTEC/INPE", icon: CloudRain },
       { id: "local", label: "Notícias locais", icon: Newspaper },
@@ -119,6 +124,11 @@ function App() {
   const [locationQuery, setLocationQuery] = useState("Marília-SP");
   const [locationResults, setLocationResults] = useState([]);
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
+  const [openWeatherKey, setOpenWeatherKey] = useState(() => readOpenWeatherKey());
+  const [openWeather, setOpenWeather] = useState(null);
+  const [openWeatherLoading, setOpenWeatherLoading] = useState(false);
+  const [openWeatherError, setOpenWeatherError] = useState("");
+  const [openWeatherRefresh, setOpenWeatherRefresh] = useState(0);
   const [localFeed, setLocalFeed] = useState(EMPTY_LOCAL_FEED);
   const [isLoading, setIsLoading] = useState(true);
   const [isLocalLoading, setIsLocalLoading] = useState(true);
@@ -132,6 +142,37 @@ function App() {
   const requestIdRef = useRef(0);
   const localRequestIdRef = useRef(0);
   const menuToggleRef = useRef(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setOpenWeather(null);
+    setOpenWeatherError("");
+    setOpenWeatherLoading(Boolean(openWeatherKey));
+    if (openWeatherKey) {
+      fetchOpenWeatherDashboard({ location, apiKey: openWeatherKey, signal: controller.signal })
+        .then((result) => {
+          if (controller.signal.aborted) return;
+          setOpenWeather(result);
+          const failures = result.sources.filter((source) => source.state === "erro");
+          if (failures.length) setOpenWeatherError(failures.length === result.sources.length ? failures[0].detail : "Algumas consultas estão indisponíveis. Confira o estado das consultas.");
+        })
+        .catch((error) => { if (!controller.signal.aborted) setOpenWeatherError(error.message); })
+        .finally(() => { if (!controller.signal.aborted) setOpenWeatherLoading(false); });
+    }
+    return () => controller.abort();
+  }, [openWeatherKey, location, openWeatherRefresh]);
+
+  function changeOpenWeatherKey(value) {
+    clearOpenWeatherCache();
+    setOpenWeather(null);
+    setOpenWeatherKey(saveOpenWeatherKey(value));
+    setOpenWeatherRefresh((revision) => revision + 1);
+  }
+
+  function refreshOpenWeather() {
+    clearOpenWeatherCache();
+    setOpenWeatherRefresh((value) => value + 1);
+  }
 
   const loadDashboard = useCallback(
     async ({ signal, showNotice = false, forceRefresh = false } = {}) => {
@@ -306,10 +347,13 @@ function App() {
 
     try {
       const position = await readCurrentPosition();
-      const nextLocation = await resolveLocationFromCoords({
+      const coords = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
-      });
+      };
+      const nextLocation = openWeatherKey
+        ? await reverseOpenWeatherLocation(coords, { apiKey: openWeatherKey })
+        : await resolveLocationFromCoords(coords);
 
       setLocation(nextLocation);
       setLocationQuery(buildLocationLabel(nextLocation));
@@ -323,6 +367,7 @@ function App() {
   }
 
   function refreshAll() {
+    refreshOpenWeather();
     loadDashboard({ showNotice: true, forceRefresh: true });
     loadLocalFeed({ showNotice: true });
   }
@@ -376,7 +421,7 @@ function App() {
             <RefreshCw size={18} className={isLoading || isLocalLoading ? "spin" : ""} />
           </button>
           <p className="location-privacy">
-            Localização é opcional. Ao ativar, as coordenadas são consultadas no Open-Meteo e BigDataCloud, sem cadastro.
+            Localização é opcional. Ao ativar, as coordenadas são enviadas ao Open-Meteo e, com a chave conectada, à OpenWeather; sem chave, ao BigDataCloud. Mapas usam OpenStreetMap.
           </p>
         </div>
       </header>
@@ -423,15 +468,16 @@ function App() {
         </nav>
 
         <section className="screen-shell" id="dashboard-content" tabIndex="-1">
-          <ScreenHeading
+          {activeView === "openweather" ? <header className="screen-heading"><div><h2>OpenWeather</h2><p className="screen-kicker">Clima, previsão e qualidade do ar</p></div></header> : <ScreenHeading
             view={currentView}
             activeView={activeView}
             dashboard={dashboard}
             localFeed={localFeed}
             location={location}
-          />
+          />}
           <ScreenAlert state={getViewState(activeView, { dashboard, localFeed, loadError, localError, isLoading, isLocalLoading })} />
-          {activeView === "overview" && <OverviewScreen dashboard={dashboard} localFeed={localFeed} />}
+          {activeView === "overview" && <><OverviewScreen dashboard={dashboard} localFeed={localFeed} />{openWeatherKey && <section className="data-section"><h3>OpenWeather</h3><SummaryLine icon={CloudSun} label={location.name} value={formatOpenWeatherValue(openWeather?.current?.temp, " °C")} detail={openWeatherLoading ? "Consultando..." : openWeatherError || openWeather?.current?.description} /><button className="search-button" type="button" onClick={() => selectView("openweather")}>Ver OpenWeather</button></section>}</>}
+          {activeView === "openweather" && <OpenWeatherScreen apiKey={openWeatherKey} onKeyChange={changeOpenWeatherKey} location={location} onLocationChange={selectLocation} data={openWeather} loading={openWeatherLoading} error={openWeatherError} onRefresh={refreshOpenWeather} />}
           {activeView === "weather" && (
             <WeatherScreen
               weather={dashboard.weather}
@@ -449,7 +495,7 @@ function App() {
           {activeView === "cptec" && <CptecScreen cptec={dashboard.cptec} location={location} />}
           {activeView === "local" && <LocalNewsScreen localFeed={localFeed} isLoading={isLocalLoading} />}
           {activeView === "fireballs" && <FireballScreen fireballs={dashboard.fireballs} />}
-          {activeView === "sources" && <SourcesScreen dashboard={dashboard} localFeed={localFeed} />}
+          {activeView === "sources" && <><SourcesScreen dashboard={dashboard} localFeed={localFeed} /><SourceGroup title="OpenWeather" sources={openWeather?.sources ?? [{ id: "openweather", label: "OpenWeather", state: openWeatherLoading ? "pendente" : "indisponivel", detail: openWeatherError || (openWeatherKey ? "Aguardando consulta" : "Conecte sua chave na tela OpenWeather") }]} /></>}
         </section>
       </main>
 

@@ -2,7 +2,7 @@
 
 **Versão**: v1.0-draft
 
-**Última atualização**: 23/08/2026
+**Última atualização**: 11/09/2026 — adendo técnico OpenWeather; bases ainda em draft
 
 **Controlador**: pendente de identificação nominal
 **Referências**: LGPD, arts. 5º, I–II, 6º, 7º, I e IX, 8º, 9º e 10; Guia Orientativo da ANPD sobre Legítimo Interesse, versão 1.0/2024.
@@ -11,7 +11,7 @@
 
 A geolocalização exata opcional usa consentimento porque é uma funcionalidade não essencial, acionada separadamente e com impacto maior sobre a privacidade. As operações técnicas restantes usam legítimo interesse apenas de forma condicional: o interesse deve ser concreto, o dado estritamente necessário, a expectativa do titular respeitada e as salvaguardas mantidas (LGPD, arts. 7º, IX, e 10).
 
-A permissão de geolocalização do navegador é um controle técnico e não substitui, isoladamente, os requisitos jurídicos de consentimento livre, informado, inequívoco e para finalidade determinada (LGPD, arts. 5º, XII, 7º, I, e 8º). O app já exibe a finalidade e os dois destinatários junto ao controle, mas ainda precisa identificar o controlador e oferecer política/canal público antes de considerar o consentimento plenamente documentado.
+A permissão de geolocalização do navegador é um controle técnico e não substitui, isoladamente, os requisitos jurídicos de consentimento livre, informado, inequívoco e para finalidade determinada (LGPD, arts. 5º, XII, 7º, I, e 8º). O app exibe a finalidade e os destinatários condicionados à conexão OpenWeather junto ao controle, mas ainda precisa identificar o controlador e oferecer política/canal público antes de considerar o consentimento plenamente documentado.
 
 ## A001 — Geolocalização opcional para clima local
 
@@ -74,6 +74,17 @@ A permissão de geolocalização do navegador é um controle técnico e não sub
 - **Oposição**: visitantes podem deixar de acessar; contribuidores devem configurar e-mail privado quando apropriado e tratar remoções possíveis com o owner/GitHub, observadas limitações do histórico distribuído.
 - **Retenção**: conforme histórico Git e políticas do GitHub; L4/L5 não identificaram garantia adicional para o plano atual, portanto a validação permanece pendente.
 - **Última revisão**: 23/08/2026.
+
+## Adendo técnico — OpenWeather e mapas, 11/09/2026
+
+Este adendo registra a implementação sem aprovar novas bases nem encerrar as pendências anteriores:
+
+- **A001, base pretendida art. 7º, I**: com chave conectada, a OpenWeather recebe coordenadas exatas para geocodificação reversa, clima e ar; Open-Meteo continua recebendo a posição para previsão. Sem chave permanece o fluxo BigDataCloud/Open-Meteo. Identificadores `geo-*` não são persistidos; desligar a localização retorna ao local padrão e limpa o cache OpenWeather.
+- **A002, enquadramento anterior art. 7º, IX, condicionado ao art. 10**: busca opcional OpenWeather envia cidade ou CEP/país e chave individual ao provedor. Retorna até cinco cidades ou um resultado postal. A atualização da LIA A002 para esse destinatário e para a busca por CEP permanece pendente.
+- **A003, enquadramento anterior art. 7º, IX, condicionado ao art. 10**: a conexão adiciona cinco consultas de dados (clima, previsão 5 dias/3h, ar atual/previsto/histórico de 24h). Abrir o mapa adiciona tiles OpenWeather e OpenStreetMap, que revelam a região visualizada e metadados de rede; a chave é enviada somente à OpenWeather. A LIA A003 e a avaliação de ambos os terceiros precisam de atualização.
+- **A004, enquadramento anterior art. 7º, IX, condicionado ao art. 10**: chave informada na versão publicada fica em `sessionStorage` até desconexão/fim da sessão da aba; indisponibilidade desse storage usa somente memória. Respostas autenticadas e coordenadas ficam em memória, com TTL lógico de dez minutos, sem `localStorage` nem Cache Storage do app. Cache limitado a 80 entradas, limpo ao desconectar/atualizar e descartado ao recarregar. Atualização da LIA A004 pendente.
+
+Papéis, termos, retenção de logs, países e eventuais garantias de OpenWeather/OpenStreetMap não foram aprovados neste adendo. Não há decisão nova sobre transferência internacional, alto risco ou validade jurídica do consentimento. A política permanece não vigente, e nenhuma chave real faz parte destes artefatos.
 
 ## Resumo e condições de validade
 

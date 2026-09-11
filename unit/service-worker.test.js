@@ -10,7 +10,7 @@ const SERVICE_WORKER_SOURCE = fs.readFileSync(path.join(ROOT, "public", "sw.js")
 const ORIGIN = "https://portfolio.test";
 const SCOPE = `${ORIGIN}/togs-heads-up/`;
 const INDEX_URL = `${SCOPE}index.html`;
-const CACHE_NAME = "togs-heads-up-v15";
+const CACHE_NAME = "togs-heads-up-v16";
 
 function requestUrl(request) {
   return typeof request === "string" ? request : request.url;
@@ -177,6 +177,7 @@ test("install precaches index and every scoped JS/CSS asset before taking contro
   harness.seedCache("togs-heads-up-v12");
   harness.seedCache("togs-heads-up-v13");
   harness.seedCache("togs-heads-up-v14");
+  harness.seedCache("togs-heads-up-v15");
   harness.seedCache("another-app-v3");
 
   await harness.dispatchExtendable("install");
@@ -200,7 +201,7 @@ test("install precaches index and every scoped JS/CSS asset before taking contro
 
   await harness.dispatchExtendable("activate");
 
-  assert.deepEqual(harness.deletedCaches, ["togs-heads-up-v10", "togs-heads-up-v11", "togs-heads-up-v13", "togs-heads-up-v14"]);
+  assert.deepEqual(harness.deletedCaches, ["togs-heads-up-v10", "togs-heads-up-v11", "togs-heads-up-v13", "togs-heads-up-v14", "togs-heads-up-v15"]);
   assert.ok(harness.cacheStores.has(CACHE_NAME));
   assert.ok(harness.cacheStores.has("togs-heads-up-v12"), "activation preserves the old uppercase-scope shell");
   assert.ok(harness.cacheStores.has("another-app-v3"));
@@ -212,12 +213,12 @@ test("a failed hashed asset prevents activation and preserves the previous cache
   routes.set(`${SCOPE}assets/index-f7g8h9.js`, new Response("unavailable", { status: 503 }));
   const harness = createHarness(routes);
   harness.seedCache("togs-heads-up-v12", [[INDEX_URL, new Response("old offline shell")]]);
-  harness.seedCache("togs-heads-up-v14", [[INDEX_URL, new Response("current offline shell")]]);
+  harness.seedCache("togs-heads-up-v15", [[INDEX_URL, new Response("current offline shell")]]);
 
   await assert.rejects(harness.dispatchExtendable("install"), /Failed to cache.*HTTP 503/);
 
   assert.ok(harness.cacheStores.has("togs-heads-up-v12"), "legacy-scope cache remains available");
-  assert.ok(harness.cacheStores.has("togs-heads-up-v14"), "current cache remains available");
+  assert.ok(harness.cacheStores.has("togs-heads-up-v15"), "current cache remains available");
   assert.ok(!harness.timeline.includes("skipWaiting"));
   assert.deepEqual(harness.deletedCaches, []);
 });
@@ -251,6 +252,9 @@ test("external, dynamic API and non-GET requests stay outside the asset cache ha
   const harness = createHarness();
   const requests = [
     { url: "https://api.open-meteo.com/v1/forecast", method: "GET", mode: "cors", accept: "application/json" },
+    { url: "https://api.openweathermap.org/data/2.5/weather?appid=test-only", method: "GET", mode: "cors", accept: "application/json" },
+    { url: "https://tile.openweathermap.org/map/temp_new/2/1/1.png?appid=test-only", method: "GET", mode: "cors", accept: "image/png" },
+    { url: "https://tile.openstreetmap.org/2/1/1.png", method: "GET", mode: "cors", accept: "image/png" },
     { url: `${SCOPE}api/status`, method: "GET", mode: "cors", accept: "application/json" },
     { url: `${SCOPE}assets/update.js`, method: "POST", mode: "cors", accept: "text/javascript" },
   ];

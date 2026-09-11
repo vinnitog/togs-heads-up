@@ -30,6 +30,12 @@ test("Vite resolves root base in dev and lowercase repository base in builds", (
 test("real production build emits only resolvable lowercase app paths", async (t) => {
   const outputDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "togs-heads-up-build-"));
   t.after(() => fs.rmSync(outputDirectory, { recursive: true, force: true }));
+  const previousKey = process.env.VITE_OPENWEATHER_API_KEY;
+  process.env.VITE_OPENWEATHER_API_KEY = "OPENWEATHER_TEST_ONLY_SENTINEL_9137";
+  t.after(() => {
+    if (previousKey === undefined) delete process.env.VITE_OPENWEATHER_API_KEY;
+    else process.env.VITE_OPENWEATHER_API_KEY = previousKey;
+  });
 
   await build({
     configFile: CONFIG_FILE,
@@ -71,4 +77,5 @@ test("real production build emits only resolvable lowercase app paths", async (t
     })
     .join("\n");
   assert.doesNotMatch(functionalOutput, new RegExp(LEGACY_BASE.replaceAll("/", "\\/")));
+  assert.ok(!functionalOutput.includes("OPENWEATHER_TEST_ONLY_SENTINEL_9137"), "development API key must not be emitted in any public asset");
 });
