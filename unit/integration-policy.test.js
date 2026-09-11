@@ -23,6 +23,10 @@ const RUNTIME_FILES = [
   "src/services/earthSpaceApi.js",
   "src/services/incidentsApi.js",
   "src/services/weatherSource.js",
+  "src/services/openWeatherApi.js",
+  "src/services/openWeatherSettings.js",
+  "src/components/OpenWeatherScreen.jsx",
+  "src/utils/openWeatherDisplay.js",
 ];
 
 function readRuntimeSources() {
@@ -82,17 +86,22 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
     "api.allorigins.win",
     "api.bigdatacloud.net",
     "api.open-meteo.com",
+    "api.openweathermap.org",
     "api.rss2json.com",
     "apiprevmet3.inmet.gov.br",
     "brasilapi.com.br",
     "g1.globo.com",
     "geocoding-api.open-meteo.com",
     "open-meteo.com",
+    "openweathermap.org",
     "portal.inmet.gov.br",
     "ssd-api.jpl.nasa.gov",
+    "tile.openstreetmap.org",
+    "tile.openweathermap.org",
     "www.giromarilia.com.br",
+    "www.openstreetmap.org",
   ]);
-  assert.deepEqual(sorted(viteVariables), ["VITE_CORS_PROXY"]);
+  assert.deepEqual(sorted(viteVariables), ["VITE_CORS_PROXY", "VITE_OPENWEATHER_API_KEY"]);
 });
 
 test("removed paid, private-key and broken integrations cannot return unnoticed", () => {
@@ -106,6 +115,11 @@ test("removed paid, private-key and broken integrations cannot return unnoticed"
     "cad.api",
     "mars-photos",
     "images-api.nasa.gov",
+    "/onecall",
+    "/data/3.0/",
+    "/forecast/daily",
+    "/forecast/hourly",
+    "history.openweathermap.org",
   ];
 
   for (const fragment of forbidden) {

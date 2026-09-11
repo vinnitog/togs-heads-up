@@ -2,7 +2,7 @@
 
 **Versão**: v1.0-draft
 
-**Data**: 23/08/2026
+**Data**: 11/09/2026 — adendo técnico OpenWeather
 
 **Escopo**: aplicação pública, repositório e entrega no GitHub Pages
 **Owner global**: responsável pelo repositório; canal público pendente de definição
@@ -28,9 +28,9 @@
 | Titulares | Visitantes que acionam voluntariamente o controle de localização; o app não verifica idade. |
 | Dados | Latitude e longitude exatas; cidade/região derivadas; IP, user-agent e metadados de rede recebidos pelos provedores. |
 | Sensíveis? | Não no escopo observado (LGPD, art. 5º, II). |
-| Fonte | Coordenadas observadas pelo navegador com permissão; cidade/região derivadas pelo BigDataCloud. |
-| Sistemas | Estado volátil do React e memória do navegador. O identificador persistível é fixo (`geo-current`) e não contém coordenadas. |
-| Operadores/terceiros | BigDataCloud (geocodificação reversa) e Open-Meteo (previsão). A previsão CPTEC é consultada diretamente na BrasilAPI quando há código compatível para a cidade. |
+| Fonte | Coordenadas observadas pelo navegador com permissão; cidade/região derivadas pela OpenWeather com chave conectada, ou BigDataCloud sem chave. |
+| Sistemas | Estado volátil do React e memória do navegador. A posição do navegador usa o identificador fixo `geo-current`, sem coordenadas no identificador e sem persistência. |
+| Operadores/terceiros | Open-Meteo (previsão); com chave, OpenWeather (geocodificação reversa, clima e ar), ou BigDataCloud sem chave. A previsão CPTEC é consultada diretamente na BrasilAPI quando há código compatível para a cidade. |
 | Coleta/transferência internacional | Coleta direta pelos provedores estrangeiros; a Res. 19/2024, art. 6º, afasta a classificação automática como transferência. Papéis e eventual fluxo controlador–importador foram avaliados em L4. |
 | Retenção no app | Somente durante a sessão/estado atual. Entradas `geo-*` não são gravadas no `localStorage`. |
 | Segurança/minimização | HTTPS; permissão acionada pelo titular; sem envio a backend próprio; sem persistência de coordenadas exatas; retorno para Marília ao desativar. |
@@ -42,18 +42,18 @@
 | Campo | Valor |
 |---|---|
 | Slug | `a002-busca-cidade-clima` |
-| Descrição | Envia o texto pesquisado ao Open-Meteo, usa as coordenadas públicas da cidade selecionada e consulta previsão. |
+| Descrição | Envia cidade ao Open-Meteo ou, na busca opcional conectada, cidade/CEP e país à OpenWeather; usa as coordenadas retornadas e consulta previsão. |
 | Finalidade | Permitir ao visitante consultar clima e previsão de uma localidade escolhida. |
 | Base legal | Legítimo interesse — LGPD, arts. 7º, IX, e 10 ([detalhes](./legal-basis.md#a002--busca-manual-de-cidade-e-previsão)). |
 | Titulares | Visitantes do site. |
-| Dados | Texto de busca, cidade selecionada, coordenadas da cidade, IP, user-agent e metadados de rede. Não há campo destinado a nome, endereço residencial ou identificador pessoal. |
+| Dados | Texto de busca, cidade ou CEP/país, coordenadas da localidade, IP, user-agent e metadados de rede; chave individual quando a OpenWeather é usada. Não há campo de endereço residencial completo. |
 | Sensíveis? | Não. |
-| Fonte | Digitado pelo visitante; dados geográficos retornados pelo Open-Meteo. |
+| Fonte | Digitado pelo visitante; dados geográficos retornados pelo Open-Meteo ou OpenWeather. |
 | Sistemas | Estado do React; `localStorage` pode guardar resposta meteorológica e localidade selecionada sob prefixo `togs-cache:v5:`. |
-| Operadores/terceiros | Open-Meteo e BrasilAPI, que distribui a previsão pública do CPTEC/INPE quando há código compatível para a cidade. |
+| Operadores/terceiros | Open-Meteo, OpenWeather opcional e BrasilAPI, que distribui a previsão pública do CPTEC/INPE quando há código compatível para a cidade. |
 | Coleta/transferência internacional | Coleta direta pelo Open-Meteo estrangeiro; não é transferência automática pelo app. Eventual fluxo controlador–importador depende dos papéis. |
 | Retenção no app | Cache fresco por 15 minutos para clima e 3 horas para CPTEC; fallback expirado limitado a 24 horas; remoção física na primeira carga posterior. |
-| Segurança/minimização | HTTPS; consulta limitada a seis resultados; nenhum histórico de pesquisas; cache restrito à resposta necessária. |
+| Segurança/minimização | HTTPS; consulta Open-Meteo limitada a seis resultados e OpenWeather a cinco cidades/um CEP; nenhum histórico persistente de pesquisas; respostas OpenWeather somente em memória, TTL lógico de dez minutos. |
 | Alto risco? | Não. |
 | Owner | Responsável pelo repositório. |
 
@@ -70,7 +70,7 @@
 | Sensíveis? | O app não busca nem classifica dados sensíveis. Matérias públicas podem conter dados de terceiros definidos editorialmente pela fonte. |
 | Fonte | APIs e feeds públicos. |
 | Sistemas | Estado do React; cache local de bolas de fogo por 3 horas, com fallback de até 24 horas. Notícias e alertas regionais não são persistidos pelo app. |
-| Operadores/terceiros | Open-Meteo, INMET, RSS2JSON, G1, Giro Marília, BrasilAPI, CPTEC/INPE, AllOrigins e NASA/JPL. AllOrigins é usado somente para JPL. |
+| Operadores/terceiros | Open-Meteo, OpenWeather opcional, OpenStreetMap somente ao abrir mapas, INMET, RSS2JSON, G1, Giro Marília, BrasilAPI, CPTEC/INPE, AllOrigins e NASA/JPL. AllOrigins é usado somente para JPL; nunca recebe a chave OpenWeather. |
 | Coleta/transferência internacional | Coleta direta pelos provedores estrangeiros; não é transferência automática pelo app. Eventuais fluxos entre terceiros/controladores permanecem pendentes. |
 | Retenção no app | Conforme cache descrito; demais dados permanecem apenas durante a sessão. |
 | Segurança/minimização | HTTPS; allowlist exata de hosts testada; falhas por fonte são isoladas; service worker ignora APIs externas. |
@@ -86,10 +86,10 @@
 | Finalidade | Melhorar desempenho, reduzir chamadas e permitir acesso offline ao shell do app. |
 | Base legal | Legítimo interesse — LGPD, arts. 7º, IX, e 10 ([detalhes](./legal-basis.md#a004--cache-técnico-e-pwa)). |
 | Titulares | Visitantes do site. |
-| Dados | Assets estáticos; timestamps técnicos; clima/localidade de cidade pesquisada; registros públicos de bolas de fogo. Coordenadas `geo-*` são excluídas do cache. |
+| Dados | Assets estáticos; timestamps técnicos; clima/localidade de cidade pesquisada; registros públicos de bolas de fogo; chave OpenWeather individual. Coordenadas `geo-*` são excluídas do armazenamento persistente; respostas OpenWeather ficam só em memória. |
 | Sensíveis? | Não. |
 | Fonte | Respostas públicas já processadas no navegador. |
-| Sistemas | Cache Storage atual `togs-heads-up-v15`; cache legado `togs-heads-up-v12` preservado para a instalação do escopo antigo; `localStorage` sob `togs-cache:v5:`. |
+| Sistemas | Cache Storage atual `togs-heads-up-v16`; cache legado `togs-heads-up-v12` preservado para a instalação do escopo antigo; `localStorage` sob `togs-cache:v5:`. Chave OpenWeather em `sessionStorage` e cache de respostas em memória, sem gravação no `localStorage`. |
 | Operadores/terceiros | Nenhum novo compartilhamento; armazenamento fica no dispositivo do titular. |
 | Transferência internacional | Não causada pelo armazenamento local. |
 | Retenção no app | Cache Storage permanece até atualização/limpeza do navegador; caches obsoletos do escopo atual são removidos na ativação, enquanto a v12 do escopo antigo é preservada durante a migração. `localStorage`: TTL operacional de 15 min/3 h, fallback de até 24 h e remoção física de entradas expiradas/legadas na próxima carga. |
@@ -123,6 +123,8 @@
 |---|---|---|---|
 | Open-Meteo | Busca, localidade, coordenadas e metadados de rede — A001/A002/A003 | `geocoding-api.open-meteo.com`, `api.open-meteo.com` | Papel, retenção, país e coleta direta internacional |
 | BigDataCloud | Coordenadas exatas e metadados de rede — A001 | `api.bigdatacloud.net` | Papel, retenção, país e coleta direta internacional |
+| OpenWeather | Chave individual, cidade/CEP, coordenadas e metadados; tiles da região visualizada — A001/A002/A003 | `api.openweathermap.org`, `tile.openweathermap.org` | Nova avaliação de papéis, termos, logs, países e fluxos internacionais pendente |
+| OpenStreetMap | Índices dos tiles da região visualizada e metadados de rede; não recebe a chave — A003 | `tile.openstreetmap.org`; somente mapa aberto | Nova avaliação de papéis, termos, logs, países e fluxos internacionais pendente |
 | AllOrigins | URL-alvo global da NASA/JPL e metadados de rede — A003 | `api.allorigins.win` | Controlador/operador a confirmar, retenção, disponibilidade e coleta direta |
 | RSS2JSON | URLs dos feeds e metadados de rede — A003 | `api.rss2json.com` | Papel, retenção, país e coleta direta internacional |
 | INMET | Metadados de rede — A003 | `apiprevmet3.inmet.gov.br` | Papel e logs públicos |
@@ -138,8 +140,10 @@
 | `togs-cache:v5:weather:{lat},{lng}` | Resposta de clima + localidade pesquisada | 15 min; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v5:cptec:{lat},{lng}` | Previsão pública CPTEC | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v5:fireballs:global` | Eventos públicos NASA/JPL | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não |
-| `togs-heads-up-v15` | Shell do escopo atual `/togs-heads-up/` | Até atualização/limpeza do navegador | Não |
+| `togs-heads-up-v16` | Shell do escopo atual `/togs-heads-up/` | Até atualização/limpeza do navegador | Não |
 | `togs-heads-up-v12` | Shell legado do escopo `/Togs-heads-up/` | Preservado durante a migração; até limpeza/reinstalação do navegador | Não |
+| `sessionStorage`: `togs-openweather-key` | Chave individual da conexão OpenWeather | Até desconectar/fim da sessão da aba; memória se storage indisponível | Não |
+| Memória: cache OpenWeather | Respostas autenticadas, URLs de consulta e chave | TTL lógico de 10 min; até 80 entradas; limpo na desconexão/atualização/recarregamento | Sim, apenas em memória durante a sessão |
 
 ## Resultado do teste de alto risco
 
@@ -151,5 +155,6 @@ Não há evidência, no escopo atual, de larga escala, impacto significativo sob
 - L4: concluído preliminarmente em `.lgpd/vendors/` e `.lgpd/transfers/`; os bloqueios identificados permanecem abertos.
 - L5: concluído; retenção e eliminação descritas em `.lgpd/retention.md`.
 - L7: workflow concluído em `.lgpd/dsar/`; o canal privado ainda precisa ser definido.
+- Adendo 11/09/2026: atualizar LIAs A002–A004 e auditoria de OpenWeather/OpenStreetMap. Não há conclusão jurídica nova nem aprovação automática dos novos terceiros.
 
 > Inventário técnico para apoio à governança. A qualificação jurídica dos papéis e bases legais deve ser validada por profissional especializado em proteção de dados.

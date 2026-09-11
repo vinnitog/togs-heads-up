@@ -4,7 +4,7 @@
 
 **Versão**: v1.0-draft
 
-**Data da minuta**: 23/08/2026
+**Data da minuta**: 23/08/2026; adendo técnico em 11/09/2026, ainda não vigente
 
 **Vigência**: não iniciada
 
@@ -12,7 +12,8 @@
 
 - O app não possui conta, banco, backend próprio, analytics, anúncios ou cookies de rastreamento.
 - Ao abrir o dashboard, seu navegador consulta fontes públicas; esses provedores recebem metadados técnicos, como IP.
-- A geolocalização é opcional. Se ativada, coordenadas exatas são enviadas ao Open-Meteo e BigDataCloud, mas não ficam no cache do app.
+- A geolocalização é opcional. Se ativada, coordenadas exatas são enviadas ao Open-Meteo e, com chave conectada, à OpenWeather; sem chave, o nome do local é obtido pelo BigDataCloud. Coordenadas exatas não são persistidas no armazenamento do app.
+- OpenWeather é uma conexão opcional com chave individual guardada na sessão da aba. Abrir mapas adiciona consultas de tiles à OpenWeather e OpenStreetMap; somente OpenWeather recebe a chave.
 - O navegador guarda temporariamente dados públicos de clima e o shell da PWA para desempenho/offline.
 - Não vendemos dados. Alguns provedores atuais ainda precisam ser removidos ou regularizados antes desta política ser publicada.
 
@@ -36,26 +37,27 @@ Sem esses campos, esta política não atende à identificação e ao contato exi
 - **Base pretendida**: consentimento (LGPD, art. 7º, I).
 - **Como funciona**: somente após clicar em “Localização” e permitir no navegador.
 - **Se recusar/revogar**: o app continua com Marília-SP e busca manual; desativar elimina as coordenadas do estado ativo.
-- **Destinatários atuais**: Open-Meteo e BigDataCloud. BigDataCloud deve ser removido/regularizado antes da publicação desta política.
+- **Destinatários atuais**: Open-Meteo e, com chave conectada, OpenWeather (nome do local, clima e ar); sem chave, BigDataCloud (nome do local). BigDataCloud deve ser removido/regularizado antes da publicação desta política; OpenWeather ainda precisa de avaliação dos papéis, termos e retenção.
 
 ### 2.2 Busca de cidade e previsão
 
-- **Dados**: texto pesquisado, cidade selecionada, coordenadas públicas da cidade e metadados técnicos.
+- **Dados**: texto pesquisado, cidade ou CEP/país, coordenadas da localidade e metadados técnicos; chave individual nas consultas OpenWeather.
 - **Finalidade**: localizar a cidade solicitada e exibir previsão.
 - **Base pretendida**: legítimo interesse (LGPD, arts. 7º, IX, e 10), conforme teste de balanceamento.
-- **Destinatários atuais**: Open-Meteo e BrasilAPI, que distribui a previsão pública do CPTEC/INPE quando aplicável.
+- **Destinatários atuais**: Open-Meteo, OpenWeather na busca opcional conectada e BrasilAPI, que distribui a previsão pública do CPTEC/INPE quando aplicável. A LIA precisa incorporar o novo destinatário e a busca por CEP.
 
 ### 2.3 Clima, notícias, alertas e eventos espaciais
 
 - **Dados**: solicitações técnicas e conteúdo público retornado pelas fontes.
 - **Finalidade**: compor as seções do dashboard.
 - **Base pretendida**: legítimo interesse (LGPD, arts. 7º, IX, e 10) quando houver dado pessoal no contexto do controlador.
-- **Destinatários/fontes atuais**: Open-Meteo, INMET, RSS2JSON, BrasilAPI, CPTEC/INPE, AllOrigins e NASA/JPL. G1 e Giro Marília fornecem feeds buscados pelo RSS2JSON; AllOrigins é usado somente para JPL.
+- **Destinatários/fontes atuais**: Open-Meteo, OpenWeather opcional, INMET, RSS2JSON, BrasilAPI, CPTEC/INPE, AllOrigins e NASA/JPL. G1 e Giro Marília fornecem feeds buscados pelo RSS2JSON; AllOrigins é usado somente para JPL e não recebe a chave OpenWeather.
+- **Mapas opcionais**: ao abrir a aba Mapas, OpenWeather e OpenStreetMap recebem índices dos tiles da região visualizada e metadados de rede. A chave individual é enviada apenas à OpenWeather. A avaliação desses destinatários e a atualização da LIA permanecem pendentes.
 - O app não cria perfis das pessoas eventualmente citadas nas notícias.
 
 ### 2.4 Cache funcional/PWA
 
-- **Dados**: assets, timestamps, clima/localidade em nível de cidade, previsão CPTEC e eventos espaciais públicos.
+- **Dados**: assets, timestamps, clima/localidade em nível de cidade, previsão CPTEC, eventos espaciais públicos e chave individual OpenWeather na sessão da aba; respostas OpenWeather somente em memória.
 - **Finalidade**: desempenho, redução de chamadas e shell offline.
 - **Base pretendida**: legítimo interesse (LGPD, arts. 7º, IX, e 10).
 - Coordenadas exatas da geolocalização opcional não são persistidas.
@@ -74,9 +76,12 @@ Sem esses campos, esta política não atende à identificação e ao contato exi
 | coordenadas opcionais | memória/estado do navegador | sessão ativa; eliminadas ao desativar/recarregar |
 | clima de cidade | `localStorage` `togs-cache:v5:*` | fresco por 15 min; fallback até 24 h; remoção na primeira carga posterior |
 | CPTEC/fireballs | `localStorage` `togs-cache:v5:*` | fresco por 3 h; fallback até 24 h; remoção na primeira carga posterior |
-| shell PWA | Cache Storage `togs-heads-up-v15` | até atualização ou limpeza do navegador |
+| shell PWA | Cache Storage `togs-heads-up-v16` | até atualização ou limpeza do navegador |
 | shell PWA legado | Cache Storage `togs-heads-up-v12` | preservado durante a migração do endereço antigo; até limpeza/reinstalação |
 | notícias/alertas | memória da sessão | até fechar/recarregar |
+| chave OpenWeather | `sessionStorage` da aba ou memória se indisponível | até desconectar/fim da sessão da aba |
+| respostas/URLs OpenWeather, inclusive coordenadas e chave | memória do navegador, sem `localStorage` ou Cache Storage | TTL lógico de 10 min, até 80 entradas; descarte na desconexão/atualização/recarregamento |
+| tiles OpenWeather/OpenStreetMap | mapa e eventual cache HTTP normal do navegador | somente consultados com mapa aberto; não integram o cache offline do app; retenção HTTP depende do navegador/provedor |
 
 Open-Meteo declara logs individuais por 90 dias, que podem conter coordenadas. Os demais prazos de terceiros estão detalhados ou marcados como pendentes em `.lgpd/vendors/` e devem ser resolvidos antes da publicação.
 
@@ -85,6 +90,8 @@ Open-Meteo declara logs individuais por 90 dias, que podem conter coordenadas. O
 | Terceiro | Finalidade | País/local conhecido | Estado desta minuta |
 |---|---|---|---|
 | Open-Meteo | geocodificação/clima | Suíça | cidade com ressalvas; posição exata pendente |
+| OpenWeather | geocodificação, clima, qualidade do ar e tiles meteorológicos, mediante conexão opcional | pendente de avaliação | novo destinatário; termos, papéis, logs e fluxos pendentes |
+| OpenStreetMap | tiles do mapa-base somente ao abrir mapas; não recebe a chave | pendente de avaliação | novo destinatário; termos, papéis, logs e fluxos pendentes |
 | BigDataCloud | nomear posição exata | Austrália; dados também em EUA | reprovado/remover |
 | BrasilAPI | distribuir previsão CPTEC | Brasil | avaliação contratual pendente |
 | AllOrigins | proxy JPL | não confirmado | reprovado/remover |
@@ -119,7 +126,7 @@ Você também pode peticionar à ANPD: <https://www.gov.br/anpd/>.
 
 ## 7. Cookies e armazenamento local
 
-O app não cria cookies de analytics, publicidade ou rastreamento. Usa `localStorage` e Cache Storage somente para as finalidades funcionais descritas. Provedores acessados e links externos possuem políticas próprias.
+O app não cria cookies de analytics, publicidade ou rastreamento. Usa `localStorage`, `sessionStorage` e Cache Storage somente para as finalidades funcionais descritas. A chave OpenWeather fica no `sessionStorage`, nunca no `localStorage` ou shell offline. Provedores acessados e links externos possuem políticas próprias.
 
 ## 8. Crianças e adolescentes
 
@@ -127,7 +134,7 @@ O produto não é direcionado a crianças/adolescentes, não cria contas, não p
 
 ## 9. Segurança e incidentes
 
-O app usa HTTPS, allowlist de hosts, não contém chaves privadas, não persiste coordenadas exatas e não inclui APIs externas no Cache Storage. Mudanças são testadas por CI. Existe runbook em `.lgpd/incidents/`.
+O app usa HTTPS e allowlist de hosts, não incorpora chave compartilhada no bundle público, não persiste coordenadas exatas e não inclui APIs externas no Cache Storage. A chave individual OpenWeather é acessível ao navegador que a utiliza e enviada diretamente aos domínios oficiais do provedor, sem proxy público. Mudanças são testadas por CI. Existe runbook em `.lgpd/incidents/`.
 
 Incidentes que atendam ao critério regulatório serão comunicados à ANPD e aos titulares em até 3 dias úteis do conhecimento de que dados pessoais foram afetados (LGPD, art. 48; Res. CD/ANPD nº 15/2024, arts. 5º, 6º e 9º).
 
@@ -138,6 +145,7 @@ Mudanças materiais de finalidade, base, destinatário, país ou retenção gera
 **Histórico**:
 
 - v1.0-draft — 23/08/2026: primeira minuta; não vigente.
+- Adendo técnico — 11/09/2026: conexão OpenWeather, CEP, mapas OpenStreetMap e retenção da chave/respostas; mantida a condição de minuta não vigente, sem aprovação jurídica nova.
 
 ## Pendências bloqueantes para v1.0
 
@@ -145,6 +153,7 @@ Mudanças materiais de finalidade, base, destinatário, país ou retenção gera
 - [ ] remover/regularizar BigDataCloud, AllOrigins e RSS2JSON;
 - [ ] decidir posição exata/Open-Meteo e garantias aplicáveis;
 - [ ] confirmar papel/plano do GitHub por operação;
+- [ ] avaliar OpenWeather/OpenStreetMap e atualizar LIAs A002–A004, inclusive consulta por CEP e retenção da chave;
 - [ ] concluir L10–L12 e revisão jurídica;
 - [ ] ajustar texto ao runtime final e aprovar publicação.
 

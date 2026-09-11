@@ -6,7 +6,7 @@
 
 **Início**: 22/08/2026
 
-**Última atualização**: 23/08/2026
+**Última atualização**: 11/09/2026 — adendo técnico OpenWeather
 
 **Encarregado**: pendente de avaliação de aplicabilidade
 
@@ -45,6 +45,16 @@
 ## Gaps abertos
 
 Ver `.lgpd/gaps.md`.
+
+## Adendo técnico — OpenWeather/OpenStreetMap
+
+Em 11/09/2026, atualizados inventário, bases pretendidas, retenção e minuta para refletir a conexão opcional OpenWeather, busca por cidade/CEP, geocodificação reversa e mapas. Mantidas as cinco atividades existentes; A001 conserva consentimento pretendido, A002–A005 conservam o enquadramento condicional anterior. Nenhuma base foi aprovada por este adendo.
+
+- Respostas OpenWeather em memória com validade de dez minutos; chave individual em `sessionStorage`, sem inclusão no bundle público ou cache persistente do app.
+- Tiles OpenWeather/OpenStreetMap somente ao abrir mapas; posição opcional continua sem persistência no armazenamento do app.
+- Shell atualizado para `togs-heads-up-v16`, com v12 legado preservado.
+- Pendente: atualizar LIAs A002–A004 e auditar termos, papéis, retenção e países dos novos destinatários. Os artefatos históricos L4 não cobrem automaticamente esses terceiros.
+- Minuta de privacidade continua não publicada; permanecem as pendências anteriores de controlador, canal e revisão jurídica. Este delta não declara conformidade.
 
 ## Próximo passo
 
