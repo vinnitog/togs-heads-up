@@ -34,7 +34,9 @@
 
 .glossary-filters input,
 .glossary-filters select,
-.glossary-clear {
+.glossary-clear,
+.glossary-pagination select,
+.glossary-pagination button {
   min-width: 0;
   min-height: 44px;
   padding: 10px 12px;
@@ -72,6 +74,7 @@
 
 .glossary-count {
   margin: 18px 0 0;
+  scroll-margin-top: 24px;
   color: #475467;
   font-size: 0.9rem;
 }
@@ -137,9 +140,76 @@
   overflow-wrap: anywhere;
 }
 
-.glossary-screen :is(a, button, input, select):focus-visible {
+.glossary-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.glossary-pagination label,
+.glossary-pagination nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.glossary-pagination label {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.glossary-pagination select {
+  font-size: 1rem;
+}
+
+.glossary-pagination nav p {
+  margin: 0;
+  color: #475467;
+  font-size: 0.9rem;
+}
+
+.glossary-pagination button {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--surface-muted);
+}
+
+.glossary-pagination button:hover:not(:disabled) {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+
+.glossary-pagination button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.glossary-screen :is(a, button, input, select):focus-visible,
+.glossary-count:focus {
   outline: 3px solid var(--blue);
   outline-offset: 3px;
+}
+
+/* [UI] No celular estreito, mantenha os dois destinos de navegação juntos. */
+@media (max-width: 480px) {
+  .glossary-pagination nav {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .glossary-pagination nav p {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
 }
 
 @media (max-width: 760px) {
