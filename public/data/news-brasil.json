@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "since": "2026-10-25T00:00:00-03:00",
+  "generatedAt": "2026-11-02T12:45:26.534Z",
+  "coverage": "Seleção automática de atos federais nos feeds monitorados, desde 25/10/2026. Feeds têm alcance limitado; o histórico cresce a partir das coletas e não garante todas as notícias ou atos. A origem é conferida pelo domínio, sem certificar o conteúdo ou a vigência da medida.",
+  "articles": [
+    {
+      "id": "https://noticias.stf.jus.br/postsnoticias/stf-realiza-nesta-terca-3-audiencia-publica-sobre-proibicao-das-bets/",
+      "title": "STF realiza nesta terça (3) audiência pública sobre proibição das bets",
+      "url": "https://noticias.stf.jus.br/postsnoticias/stf-realiza-nesta-terca-3-audiencia-publica-sobre-proibicao-das-bets/",
+      "publishedAt": "2026-11-02T12:00:00.000Z",
+      "sourceId": "stf",
+      "category": "acompanhamento",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/11/02/empresas-devem-oferecer-atendimento-humano-para-o-consumidor-a-partir-desta-segunda-feira.ghtml",
+      "title": "Empresas devem oferecer atendimento humano para o consumidor a partir desta segunda-feira",
+      "url": "https://g1.globo.com/politica/noticia/2026/11/02/empresas-devem-oferecer-atendimento-humano-para-o-consumidor-a-partir-desta-segunda-feira.ghtml",
+      "publishedAt": "2026-11-02T10:22:23.000Z",
+      "sourceId": "g1",
+      "category": "acompanhamento",
+      "branch": "executivo"
+    },
+    {
+      "id": "https://www1.folha.uol.com.br/poder/2026/11/esquerda-quer-regulacao-das-redes-e-mobilizacao-digital-permanente-apos-eleicao-de-lula.shtml",
+      "title": "Esquerda quer regulação das redes e mobilização digital permanente após eleição de Lula",
+      "url": "https://www1.folha.uol.com.br/poder/2026/11/esquerda-quer-regulacao-das-redes-e-mobilizacao-digital-permanente-apos-eleicao-de-lula.shtml",
+      "publishedAt": "2026-11-01T15:00:00.000Z",
+      "sourceId": "folha",
+      "category": "proposta",
+      "branch": "executivo"
+    },
+    {
+      "id": "https://agenciabrasil.ebc.com.br/politica/noticia/2026-10/alcolumbre-marca-votacao-da-pec-da-seguranca-publica-para-terca-feira",
+      "title": "Alcolumbre marca votação da PEC da Segurança Pública para terça-feira",
+      "url": "https://agenciabrasil.ebc.com.br/politica/noticia/2026-10/alcolumbre-marca-votacao-da-pec-da-seguranca-publica-para-terca-feira",
+      "publishedAt": "2026-10-31T13:22:00.000Z",
+      "sourceId": "agenciabrasil",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www1.folha.uol.com.br/poder/2026/10/pgr-endossa-decisao-de-moraes-sobre-quebra-de-sigilo-da-fonte-de-jornalista-do-maranhao.shtml",
+      "title": "PGR endossa decisão de Moraes sobre quebra de sigilo da fonte de jornalista do Maranhão",
+      "url": "https://www1.folha.uol.com.br/poder/2026/10/pgr-endossa-decisao-de-moraes-sobre-quebra-de-sigilo-da-fonte-de-jornalista-do-maranhao.shtml",
+      "publishedAt": "2026-10-30T23:24:00.000Z",
+      "sourceId": "folha",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://www12.senado.leg.br/noticias/materias/2026/10/30/davi-marca-para-terca-votacao-da-pec-da-seguranca",
+      "title": "Davi marca para terça votação da PEC da Segurança",
+      "url": "https://www12.senado.leg.br/noticias/materias/2026/10/30/davi-marca-para-terca-votacao-da-pec-da-seguranca",
+      "publishedAt": "2026-10-30T23:10:23.000Z",
+      "sourceId": "senado",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/30/alcolumbre-pauta-votacao-da-pec-da-seguranca-publica-para-a-proxima-terca-feira.ghtml",
+      "title": "Alcolumbre pauta votação da PEC da Segurança Pública para a próxima terça-feira",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/30/alcolumbre-pauta-votacao-da-pec-da-seguranca-publica-para-a-proxima-terca-feira.ghtml",
+      "publishedAt": "2026-10-30T21:32:34.000Z",
+      "sourceId": "g1",
+      "category": "acompanhamento",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www1.folha.uol.com.br/poder/2026/10/fachin-tenta-conter-divisao-no-stf-mas-decisao-sobre-inss-incomoda-aliados-de-moraes.shtml",
+      "title": "Fachin tenta conter divisão no STF, mas decisão sobre INSS incomoda aliados de Moraes",
+      "url": "https://www1.folha.uol.com.br/poder/2026/10/fachin-tenta-conter-divisao-no-stf-mas-decisao-sobre-inss-incomoda-aliados-de-moraes.shtml",
+      "publishedAt": "2026-10-30T16:24:00.000Z",
+      "sourceId": "folha",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://noticias.stf.jus.br/postsnoticias/presidente-do-stf-devolve-operacao-sem-desconto-a-relator-e-mantem-provisoriamente-compliance-zero/",
+      "title": "Presidente do STF devolve Operação Sem Desconto a relator e mantém provisoriamente Compliance Zero",
+      "url": "https://noticias.stf.jus.br/postsnoticias/presidente-do-stf-devolve-operacao-sem-desconto-a-relator-e-mantem-provisoriamente-compliance-zero/",
+      "publishedAt": "2026-10-29T23:58:35.000Z",
+      "sourceId": "stf",
+      "category": "acompanhamento",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/29/fachin-decide-devolver-investigacao-do-inss-a-mendonca-presidente-do-stf-mantem-sob-sua-responsabilidade-caso-master.ghtml",
+      "title": "Fachin decide devolver investigação do INSS a Mendonça; presidente do STF mantém sob sua responsabilidade caso Master",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/29/fachin-decide-devolver-investigacao-do-inss-a-mendonca-presidente-do-stf-mantem-sob-sua-responsabilidade-caso-master.ghtml",
+      "publishedAt": "2026-10-29T23:56:55.000Z",
+      "sourceId": "g1",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://noticias.stf.jus.br/postsnoticias/stf-valida-regra-que-altera-isencao-de-contribuicao-previdenciaria-sobre-aposentadoria-de-servidores-incapacitados/",
+      "title": "STF valida regra que altera isenção de contribuição previdenciária sobre aposentadoria de servidores incapacitados",
+      "url": "https://noticias.stf.jus.br/postsnoticias/stf-valida-regra-que-altera-isencao-de-contribuicao-previdenciaria-sobre-aposentadoria-de-servidores-incapacitados/",
+      "publishedAt": "2026-10-29T22:49:15.000Z",
+      "sourceId": "stf",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://noticias.stf.jus.br/postsnoticias/stf-suspende-julgamento-sobre-igualdade-entre-homens-e-mulheres-na-previdencia-complementar/",
+      "title": "STF suspende julgamento sobre igualdade entre homens e mulheres na previdência complementar",
+      "url": "https://noticias.stf.jus.br/postsnoticias/stf-suspende-julgamento-sobre-igualdade-entre-homens-e-mulheres-na-previdencia-complementar/",
+      "publishedAt": "2026-10-29T22:04:27.000Z",
+      "sourceId": "stf",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1314934-comissao-aprova-politica-nacional-de-inclusao-e-letramento-digital-para-pessoas-idosas",
+      "title": "Comissão aprova política nacional de inclusão e letramento digital para pessoas idosas",
+      "url": "https://www.camara.leg.br/noticias/1314934-comissao-aprova-politica-nacional-de-inclusao-e-letramento-digital-para-pessoas-idosas",
+      "publishedAt": "2026-10-29T20:31:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www12.senado.leg.br/noticias/materias/2026/10/29/projeto-cria-regras-para-reaproveitar-plataformas-de-petroleo-para-outros-usos",
+      "title": "Projeto cria regras para reaproveitar plataformas de petróleo para outros usos",
+      "url": "https://www12.senado.leg.br/noticias/materias/2026/10/29/projeto-cria-regras-para-reaproveitar-plataformas-de-petroleo-para-outros-usos",
+      "publishedAt": "2026-10-29T20:27:15.000Z",
+      "sourceId": "senado",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1314742-comissao-aprova-acessibilidade-para-exames-de-prevencao-ao-cancer-em-mulheres-com-deficiencia",
+      "title": "Comissão aprova acessibilidade para exames de prevenção ao câncer em mulheres com deficiência",
+      "url": "https://www.camara.leg.br/noticias/1314742-comissao-aprova-acessibilidade-para-exames-de-prevencao-ao-cancer-em-mulheres-com-deficiencia",
+      "publishedAt": "2026-10-29T20:17:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www1.folha.uol.com.br/poder/2026/10/tse-decide-que-condenados-por-violencia-contra-a-mulher-sao-inelegiveis-e-vai-enviar-proposta-ao-congresso.shtml",
+      "title": "TSE decide que condenados por violência contra a mulher são inelegíveis e vai enviar proposta ao Congresso",
+      "url": "https://www1.folha.uol.com.br/poder/2026/10/tse-decide-que-condenados-por-violencia-contra-a-mulher-sao-inelegiveis-e-vai-enviar-proposta-ao-congresso.shtml",
+      "publishedAt": "2026-10-29T19:33:00.000Z",
+      "sourceId": "folha",
+      "category": "proposta",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://noticias.stf.jus.br/postsnoticias/stf-determina-arquivamento-de-inquerito-contra-youtuber-monark-por-descumprimento-de-ordem-judicial/",
+      "title": "STF determina arquivamento de inquérito contra youtuber Monark por descumprimento de ordem judicial",
+      "url": "https://noticias.stf.jus.br/postsnoticias/stf-determina-arquivamento-de-inquerito-contra-youtuber-monark-por-descumprimento-de-ordem-judicial/",
+      "publishedAt": "2026-10-29T19:31:19.000Z",
+      "sourceId": "stf",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1314858-comissao-aprova-proposta-que-tipifica-lesbocidio-no-codigo-penal",
+      "title": "Comissão aprova proposta que tipifica lesbocídio no Código Penal",
+      "url": "https://www.camara.leg.br/noticias/1314858-comissao-aprova-proposta-que-tipifica-lesbocidio-no-codigo-penal",
+      "publishedAt": "2026-10-29T19:20:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1314884-comissao-aprova-regras-para-garantir-continuidade-dos-estudos-de-vitimas-de-violencia-nas-escolas",
+      "title": "Comissão aprova regras para garantir continuidade dos estudos de vítimas de violência nas escolas",
+      "url": "https://www.camara.leg.br/noticias/1314884-comissao-aprova-regras-para-garantir-continuidade-dos-estudos-de-vitimas-de-violencia-nas-escolas",
+      "publishedAt": "2026-10-29T19:11:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1314824-comissao-aprova-inclusao-expressa-de-casais-homoafetivos-na-lei-maria-da-penha",
+      "title": "Comissão aprova inclusão expressa de casais homoafetivos na Lei Maria da Penha",
+      "url": "https://www.camara.leg.br/noticias/1314824-comissao-aprova-inclusao-expressa-de-casais-homoafetivos-na-lei-maria-da-penha",
+      "publishedAt": "2026-10-29T15:24:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/29/fachin-determina-arquivamento-de-cinco-investigacoes-ligadas-ao-inquerito-das-fake-news.ghtml",
+      "title": "Fachin determina arquivamento de cinco investigações ligadas ao inquérito das fake news",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/29/fachin-determina-arquivamento-de-cinco-investigacoes-ligadas-ao-inquerito-das-fake-news.ghtml",
+      "publishedAt": "2026-10-29T13:30:53.000Z",
+      "sourceId": "g1",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/2026/29102026-Radio-Decidendi-debate-direitos-de-militares-transgenero-nas-Forcas-Armadas.aspx",
+      "title": "Rádio Decidendi debate direitos de militares transgênero nas Forças Armadas",
+      "url": "https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/2026/29102026-Radio-Decidendi-debate-direitos-de-militares-transgenero-nas-Forcas-Armadas.aspx",
+      "publishedAt": "2026-10-29T10:05:00.000Z",
+      "sourceId": "stj",
+      "category": "proposta",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://g1.globo.com/empreendedorismo/noticia/2026/10/29/pizzaria-pede-que-clientes-de-esquerda-nao-frequentem-o-local-veja-o-que-diz-a-lei-sobre-recusar-atendimento.ghtml",
+      "title": "Pizzaria pede que clientes de esquerda não frequentem o local; veja o que diz a lei sobre recusar atendimento",
+      "url": "https://g1.globo.com/empreendedorismo/noticia/2026/10/29/pizzaria-pede-que-clientes-de-esquerda-nao-frequentem-o-local-veja-o-que-diz-a-lei-sobre-recusar-atendimento.ghtml",
+      "publishedAt": "2026-10-29T06:00:01.000Z",
+      "sourceId": "g1",
+      "category": "acompanhamento",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1310580-projeto-cria-politica-de-incentivo-a-tecnologia-assistiva-e-mobilidade-inclusiva",
+      "title": "Projeto cria política de incentivo à tecnologia assistiva e mobilidade inclusiva",
+      "url": "https://www.camara.leg.br/noticias/1310580-projeto-cria-politica-de-incentivo-a-tecnologia-assistiva-e-mobilidade-inclusiva",
+      "publishedAt": "2026-10-28T23:28:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www.camara.leg.br/noticias/1310582-projeto-cria-politica-de-incentivo-a-inclusao-de-ciclovias-em-rodovias-federais",
+      "title": "Projeto cria política de incentivo à inclusão de ciclovias em rodovias federais",
+      "url": "https://www.camara.leg.br/noticias/1310582-projeto-cria-politica-de-incentivo-a-inclusao-de-ciclovias-em-rodovias-federais",
+      "publishedAt": "2026-10-28T22:34:00.000Z",
+      "sourceId": "camara",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/28/proibicao-de-flavio-bolsonaro-deixar-o-pais-era-medida-logica-apos-cancelamento-do-passaporte-diz-moraes.ghtml",
+      "title": "Proibição de Flávio Bolsonaro deixar o país era medida lógica após cancelamento do passaporte, diz Moraes",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/28/proibicao-de-flavio-bolsonaro-deixar-o-pais-era-medida-logica-apos-cancelamento-do-passaporte-diz-moraes.ghtml",
+      "publishedAt": "2026-10-28T19:55:26.000Z",
+      "sourceId": "g1",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/28/tse-decide-que-federacao-psol-rede-cumpriu-clausula-de-barreira.ghtml",
+      "title": "TSE decide que federação PSOL-Rede cumpriu cláusula de barreira",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/28/tse-decide-que-federacao-psol-rede-cumpriu-clausula-de-barreira.ghtml",
+      "publishedAt": "2026-10-28T16:09:06.000Z",
+      "sourceId": "g1",
+      "category": "decisao",
+      "branch": "judiciario"
+    },
+    {
+      "id": "https://g1.globo.com/politica/noticia/2026/10/28/motta-diz-que-camara-vai-debater-mudanca-para-sistema-distrital-misto-e-regras-para-propaganda-eleitoral-nas-redes.ghtml",
+      "title": "Motta diz que Câmara vai debater mudança para sistema distrital misto e regras para propaganda eleitoral nas redes",
+      "url": "https://g1.globo.com/politica/noticia/2026/10/28/motta-diz-que-camara-vai-debater-mudanca-para-sistema-distrital-misto-e-regras-para-propaganda-eleitoral-nas-redes.ghtml",
+      "publishedAt": "2026-10-28T14:53:12.000Z",
+      "sourceId": "g1",
+      "category": "proposta",
+      "branch": "legislativo"
+    },
+    {
+      "id": "https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/2026/26102026-Primeira-Secao-fixa-criterios-para-valor-de-indenizacao-em-desapropriacoes--colegiado-modula-efeitos.aspx",
+      "title": "Primeira Seção fixa critérios para valor de indenização em desapropriações; colegiado modula efeitos",
+      "url": "https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/2026/26102026-Primeira-Secao-fixa-criterios-para-valor-de-indenizacao-em-desapropriacoes--colegiado-modula-efeitos.aspx",
+      "publishedAt": "2026-10-26T09:50:00.000Z",
+      "sourceId": "stj",
+      "category": "acompanhamento",
+      "branch": "judiciario"
+    }
+  ],
+  "sources": [
+    {
+      "id": "camara",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 7
+    },
+    {
+      "id": "senado",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 2
+    },
+    {
+      "id": "agenciagov",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 0
+    },
+    {
+      "id": "stf",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 5
+    },
+    {
+      "id": "stj",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 2
+    },
+    {
+      "id": "agenciabrasil",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 1
+    },
+    {
+      "id": "g1",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 8
+    },
+    {
+      "id": "folha",
+      "state": "ok",
+      "lastSuccessAt": "2026-11-02T12:45:26.534Z",
+      "detail": "Feed consultado; origem dos links conferida pelo domínio.",
+      "count": 4
+    }
+  ]
+}

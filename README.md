@@ -1,6 +1,6 @@
 # Togs Heads Up
 
-Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, notícias regionais de Marília-SP e registros públicos de bolas de fogo em uma única interface.
+Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, notícias regionais de Marília-SP, notícias de atos federais e registros públicos de bolas de fogo em uma única interface.
 
 [Acessar demonstração](https://vinnitog.github.io/togs-heads-up/)
 
@@ -12,6 +12,8 @@ Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, no
 - previsão nacional complementar do CPTEC/INPE, distribuída pela BrasilAPI;
 - avisos meteorológicos oficiais do INMET, quando o endpoint público responde;
 - notícias e alertas de Marília-SP filtrados de fontes públicas;
+- menu News Brasil com notícias sobre atos federais desde 25/10/2026, filtros por assunto, origem, poder e tipo, com atribuição e link original;
+- glossário pesquisável de siglas e unidades dos painéis, com significados em português, categorias e referências para consulta;
 - registros de bolas de fogo da NASA/JPL;
 - funcionamento como PWA, com shell disponível offline;
 - estados independentes de carregamento, erro, cache e indisponibilidade por fonte;
@@ -65,9 +67,12 @@ O comando executa testes unitários e o build de produção.
 | CPTEC/INPE via BrasilAPI | previsão nacional complementar | gratuita, sem chave e com CORS; Marília usa o código 3159 |
 | INMET | avisos meteorológicos oficiais | endpoint público instável; falha isolada do restante do painel |
 | G1 Bauru e Marília / Giro Marília | notícias regionais | feeds RSS convertidos para JSON |
+| News Brasil | leis, normas, propostas e decisões federais | feeds institucionais e de imprensa selecionados, coletados pelo GitHub Actions; a origem não atesta a vigência da norma |
 | NASA/JPL CNEOS | bolas de fogo | fonte pública acessada por proxy |
 
 As integrações degradam de forma independente: a falha de uma fonte não bloqueia o restante do painel.
+
+News Brasil consulta um catálogo JSON na própria hospedagem. Para atualizar localmente, execute `node scripts/collect-brasil-news.mjs`. A coleta programada a cada 30 minutos fica ativa após merge em `main`; o botão da tela carrega a última coleta publicada. RSS tem cobertura limitada e o histórico acumulado no cache do Actions pode expirar. O menu informa falhas, última tentativa e último sucesso por fonte. Veja o recorte, os critérios de procedência e as limitações em [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md).
 
 O painel diferencia procedência: **INMET** é a fonte de avisos oficiais; **Open-Meteo** produz somente uma estimativa baseada em previsão numérica. Métricas, limitações e fontes planejadas estão em [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md).
 

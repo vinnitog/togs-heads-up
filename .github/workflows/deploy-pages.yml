@@ -6,6 +6,8 @@ on:
       - main
       - develop
   workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
 
 permissions:
   contents: read
@@ -34,6 +36,24 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Restore News Brasil history
+        uses: actions/cache/restore@v4
+        with:
+          path: public/data/news-brasil.json
+          key: news-brasil-v1-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            news-brasil-v1-${{ github.ref_name }}-
+
+      - name: Collect News Brasil
+        run: node scripts/collect-brasil-news.mjs
+
+      - name: Preserve News Brasil history
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: public/data/news-brasil.json
+          key: news-brasil-v1-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Run tests
         run: npm test

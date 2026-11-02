@@ -12,6 +12,7 @@ import {
   buildReverseGeocodingUrl,
 } from "../src/services/earthSpaceApi.js";
 import { getConfiguredSources } from "../src/services/incidentsApi.js";
+import { BRASIL_NEWS_SOURCES } from "../src/services/brasilNews.js";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const RUNTIME_FILES = [
@@ -27,6 +28,10 @@ const RUNTIME_FILES = [
   "src/services/openWeatherSettings.js",
   "src/components/OpenWeatherScreen.jsx",
   "src/utils/openWeatherDisplay.js",
+  "src/services/brasilNews.js",
+  "src/components/BrasilNewsScreen.jsx",
+  "src/data/glossary.js",
+  "src/components/GlossaryScreen.jsx",
 ];
 
 function readRuntimeSources() {
@@ -83,6 +88,8 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
   const viteVariables = [...runtimeSources.matchAll(/\bVITE_[A-Z0-9_]+\b/g)].map((match) => match[0]);
 
   assert.deepEqual(sorted(hosts), [
+    "agenciabrasil.ebc.com.br",
+    "agenciagov.ebc.com.br",
     "api.allorigins.win",
     "api.bigdatacloud.net",
     "api.open-meteo.com",
@@ -90,18 +97,49 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
     "api.rss2json.com",
     "apiprevmet3.inmet.gov.br",
     "brasilapi.com.br",
+    "cneos.jpl.nasa.gov",
+    "developer.mozilla.org",
+    "feeds.folha.uol.com.br",
     "g1.globo.com",
     "geocoding-api.open-meteo.com",
+    "noticias.stf.jus.br",
     "open-meteo.com",
     "openweathermap.org",
     "portal.inmet.gov.br",
+    "redir.folha.com.br",
+    "res.stj.jus.br",
+    "s0.cptec.inpe.br",
     "ssd-api.jpl.nasa.gov",
     "tile.openstreetmap.org",
     "tile.openweathermap.org",
+    "wmo.int",
+    "www.bipm.org",
+    "www.camara.leg.br",
+    "www.congressonacional.leg.br",
+    "www.correios.com.br",
+    "www.ebc.com.br",
     "www.giromarilia.com.br",
+    "www.gov.br",
+    "www.in.gov.br",
+    "www.jpl.nasa.gov",
+    "www.mpf.mp.br",
+    "www.nasa.gov",
     "www.openstreetmap.org",
+    "www.planalto.gov.br",
+    "www.tre-sp.jus.br",
+    "www.tse.jus.br",
+    "www.weather.gov",
+    "www12.senado.leg.br",
+    "www2.inpe.br",
   ]);
   assert.deepEqual(sorted(viteVariables), ["VITE_CORS_PROXY", "VITE_OPENWEATHER_API_KEY"]);
+});
+
+test("News Brasil publisher and feed hosts stay in an exact reviewed registry", () => {
+  assert.deepEqual(sorted(BRASIL_NEWS_SOURCES.map(({ id }) => id)), ["agenciabrasil", "agenciagov", "camara", "folha", "g1", "senado", "stf", "stj"]);
+  assert.deepEqual(sorted(BRASIL_NEWS_SOURCES.flatMap(({ hosts, feedHosts = [] }) => [...hosts, ...feedHosts])), [
+    "agenciabrasil.ebc.com.br", "agenciagov.ebc.com.br", "feeds.folha.uol.com.br", "g1.globo.com", "noticias.stf.jus.br", "res.stj.jus.br", "www.camara.leg.br", "www.stj.jus.br", "www1.folha.uol.com.br", "www12.senado.leg.br",
+  ]);
 });
 
 test("removed paid, private-key and broken integrations cannot return unnoticed", () => {
