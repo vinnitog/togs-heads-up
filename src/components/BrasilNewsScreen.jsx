@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import {
   BRASIL_NEWS_BRANCHES,
@@ -10,7 +10,6 @@ import {
 } from "../services/brasilNews.js";
 import "./brasilNews.css";
 
-const PAGE_SIZE = 25;
 const ORIGIN_LABELS = {
   oficial: "Portal oficial",
   "imprensa-publica": "Imprensa pública",
@@ -35,8 +34,11 @@ export default function BrasilNewsScreen() {
   const [origin, setOrigin] = useState("todas");
   const [branch, setBranch] = useState("todos");
   const [category, setCategory] = useState("todas");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
   const [clock, setClock] = useState(Date.now);
+  const resultsRef = useRef(null);
+  const focusResultsAfterNavigation = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,12 +70,37 @@ export default function BrasilNewsScreen() {
   const filtered = useMemo(() => filterBrasilNews(feed?.articles ?? [], {
     query, origin, branch, category,
   }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)), [feed, query, origin, branch, category]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const visibleArticles = filtered.slice(startIndex, startIndex + pageSize);
+  const visibleRange = filtered.length > 0
+    ? `Mostrando ${startIndex + 1}–${startIndex + visibleArticles.length} de ${filtered.length} notícia(s) no filtro`
+    : "Mostrando 0 de 0 notícia(s) no filtro";
   const stale = feed?.generatedAt && clock - Date.parse(feed.generatedAt) > 90 * 60 * 1000;
   const availableSources = feed?.sources.filter((source) => source.state === "ok").length ?? 0;
 
+  // Uma coleta menor também atualiza o estado para não restaurar uma página antiga depois.
+  useEffect(() => {
+    if (page !== currentPage) setPage(currentPage);
+  }, [page, currentPage]);
+
+  // [UI] Retome a leitura somente após a navegação solicitada pelo visitante.
+  useEffect(() => {
+    if (!focusResultsAfterNavigation.current) return;
+    focusResultsAfterNavigation.current = false;
+    resultsRef.current?.focus();
+    resultsRef.current?.scrollIntoView?.({ block: "start" });
+  }, [page, currentPage]);
+
+  function navigateToPage(nextPage) {
+    focusResultsAfterNavigation.current = true;
+    setPage(nextPage);
+  }
+
   function changeFilter(setter, value) {
     setter(value);
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   }
 
   function clearFilters() {
@@ -81,7 +108,7 @@ export default function BrasilNewsScreen() {
     setOrigin("todas");
     setBranch("todos");
     setCategory("todas");
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   }
 
   return (
@@ -131,7 +158,8 @@ export default function BrasilNewsScreen() {
           </label>
         </div>
         <div className="brasil-news-results">
-          <p role="status" aria-live="polite">{loading ? "Carregando a última coleta publicada…" : `Mostrando ${Math.min(visibleCount, filtered.length)} de ${filtered.length} notícia(s) no filtro · mais recentes primeiro`}</p>
+          {/* [UI] Atualizações em segundo plano preservam a faixa dos artigos ainda visíveis. */}
+          <p className="brasil-news-count" ref={resultsRef} tabIndex={-1} role="status" aria-live="polite">{loading && !feed ? "Carregando a última coleta publicada…" : `${visibleRange} · mais recentes primeiro${loading ? " · atualizando coleta…" : ""}`}</p>
           <button className="ghost-button" type="button" onClick={clearFilters}>Limpar filtros</button>
         </div>
 
@@ -144,7 +172,7 @@ export default function BrasilNewsScreen() {
           : "Nenhuma notícia disponível no recorte. Consulte abaixo o estado das fontes; isso não significa ausência de novos atos."}</p>}
 
         <div className="brasil-news-list">
-          {filtered.slice(0, visibleCount).map((article) => {
+          {visibleArticles.map((article) => {
             const source = SOURCE_BY_ID.get(article.sourceId);
             return <article className="brasil-news-article" key={article.id}>
               <div className="brasil-news-article-meta">
@@ -157,9 +185,18 @@ export default function BrasilNewsScreen() {
             </article>;
           })}
         </div>
-        {filtered.length > visibleCount && <button className="ghost-button brasil-news-more" type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-          Mostrar mais {Math.min(PAGE_SIZE, filtered.length - visibleCount)} notícias
-        </button>}
+        <div className="brasil-news-pagination">
+          <label>Itens por página
+            <select value={pageSize} onChange={(event) => changeFilter(setPageSize, Number(event.target.value))}>
+              {[10, 20, 50].map((size) => <option value={size} key={size}>{size}</option>)}
+            </select>
+          </label>
+          {filtered.length > 0 && <nav aria-label="Paginação News Brasil">
+            <button className="ghost-button" type="button" disabled={currentPage === 1} onClick={() => navigateToPage(Math.max(1, currentPage - 1))}>Anterior</button>
+            <p>Página {currentPage} de {totalPages}</p>
+            <button className="ghost-button" type="button" disabled={currentPage === totalPages} onClick={() => navigateToPage(Math.min(totalPages, currentPage + 1))}>Próxima</button>
+          </nav>}
+        </div>
       </section>
 
       <section className="brasil-news-provenance data-section" aria-labelledby="brasil-news-sources-title">
