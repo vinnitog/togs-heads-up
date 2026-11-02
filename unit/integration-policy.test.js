@@ -30,6 +30,8 @@ const RUNTIME_FILES = [
   "src/utils/openWeatherDisplay.js",
   "src/services/brasilNews.js",
   "src/components/BrasilNewsScreen.jsx",
+  "src/data/glossary.js",
+  "src/components/GlossaryScreen.jsx",
 ];
 
 function readRuntimeSources() {
@@ -95,6 +97,8 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
     "api.rss2json.com",
     "apiprevmet3.inmet.gov.br",
     "brasilapi.com.br",
+    "cneos.jpl.nasa.gov",
+    "developer.mozilla.org",
     "feeds.folha.uol.com.br",
     "g1.globo.com",
     "geocoding-api.open-meteo.com",
@@ -104,16 +108,29 @@ test("runtime code has an exact host and Vite variable allowlist", () => {
     "portal.inmet.gov.br",
     "redir.folha.com.br",
     "res.stj.jus.br",
+    "s0.cptec.inpe.br",
     "ssd-api.jpl.nasa.gov",
     "tile.openstreetmap.org",
     "tile.openweathermap.org",
+    "wmo.int",
+    "www.bipm.org",
     "www.camara.leg.br",
+    "www.congressonacional.leg.br",
+    "www.correios.com.br",
+    "www.ebc.com.br",
     "www.giromarilia.com.br",
+    "www.gov.br",
     "www.in.gov.br",
+    "www.jpl.nasa.gov",
+    "www.mpf.mp.br",
+    "www.nasa.gov",
     "www.openstreetmap.org",
     "www.planalto.gov.br",
     "www.tre-sp.jus.br",
+    "www.tse.jus.br",
+    "www.weather.gov",
     "www12.senado.leg.br",
+    "www2.inpe.br",
   ]);
   assert.deepEqual(sorted(viteVariables), ["VITE_CORS_PROXY", "VITE_OPENWEATHER_API_KEY"]);
 });

@@ -13,6 +13,7 @@ Dashboard responsivo que reúne clima, risco meteorológico, avisos oficiais, no
 - avisos meteorológicos oficiais do INMET, quando o endpoint público responde;
 - notícias e alertas de Marília-SP filtrados de fontes públicas;
 - menu News Brasil com notícias sobre atos federais desde 25/10/2026, filtros por assunto, origem, poder e tipo, com atribuição e link original;
+- glossário pesquisável de siglas e unidades dos painéis, com significados em português, categorias e referências para consulta;
 - registros de bolas de fogo da NASA/JPL;
 - funcionamento como PWA, com shell disponível offline;
 - estados independentes de carregamento, erro, cache e indisponibilidade por fonte;

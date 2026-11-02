@@ -1,0 +1,117 @@
+export const GLOSSARY_CATEGORIES = {
+  governo: "Governo e justiça",
+  clima: "Clima e ar",
+  espaco: "Espaço",
+  tecnologia: "Tecnologia",
+  medidas: "Localização e unidades",
+};
+
+export const GLOSSARY_SOURCES = {
+  legislativo: { label: "Glossário do Congresso Nacional", url: "https://www.congressonacional.leg.br/legislacao-e-publicacoes/glossario-legislativo" },
+  justica: { label: "Guia jurídico do Senado", url: "https://www12.senado.leg.br/manualdecomunicacao/guia-juridico" },
+  eleicoes: { label: "Justiça Eleitoral", url: "https://www.tse.jus.br/" },
+  partidos: { label: "Partidos registrados no TSE", url: "https://www.tse.jus.br/partidos/partidos-registrados-no-tse" },
+  procuradoria: { label: "Ministério Público Federal", url: "https://www.mpf.mp.br/o-mpf/unidades/procuradoria-geral-da-republica-pgr" },
+  inss: { label: "Institucional do INSS", url: "https://www.gov.br/inss/pt-br/acesso-a-informacao/institucional" },
+  ebc: { label: "Empresa Brasil de Comunicação", url: "https://www.ebc.com.br/" },
+  dou: { label: "Diário Oficial da União", url: "https://www.in.gov.br/consulta" },
+  anvisa: { label: "Institucional da Anvisa", url: "https://www.gov.br/anvisa/pt-br/acessoainformacao/institucional" },
+  anatel: { label: "Institucional da Anatel", url: "https://www.gov.br/anatel/pt-br/acesso-a-informacao/institucional" },
+  anpd: { label: "Institucional da ANPD", url: "https://www.gov.br/anpd/pt-br/acesso-a-informacao/institucional" },
+  meteorologia: { label: "Documento de monitoramento do CPTEC/INPE", url: "https://s0.cptec.inpe.br/webcptec/sites/clima/pdf/doc_info_monitoramento_site_clima.pdf" },
+  wmo: { label: "Organização Meteorológica Mundial", url: "https://wmo.int/about-us" },
+  cape: { label: "Serviço meteorológico dos Estados Unidos", url: "https://www.weather.gov/mfl/analysisinfo" },
+  ar: { label: "Documentação de qualidade do ar da OpenWeather", url: "https://openweathermap.org/api/air-pollution" },
+  inpe: { label: "Glossário do INPE", url: "https://www2.inpe.br/climaespacial/portal/glossario/" },
+  nasa: { label: "Sobre a NASA", url: "https://www.nasa.gov/about/" },
+  jpl: { label: "Sobre o JPL", url: "https://www.jpl.nasa.gov/who-we-are/" },
+  cneos: { label: "Sobre o CNEOS", url: "https://cneos.jpl.nasa.gov/about/" },
+  energia: { label: "Energia de bolas de fogo — CNEOS", url: "https://cneos.jpl.nasa.gov/fireballs/intro.html" },
+  web: { label: "Glossário de tecnologia da Mozilla", url: "https://developer.mozilla.org/pt-BR/docs/Glossary" },
+  cors: { label: "Guia de CORS da Mozilla", url: "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Guides/CORS" },
+  cep: { label: "Tudo sobre CEP — Correios", url: "https://www.correios.com.br/enviar/precisa-de-ajuda/tudo-sobre-cep" },
+  geocodificacao: { label: "Documentação de localização da OpenWeather", url: "https://openweathermap.org/api/geocoding-api" },
+  unidades: { label: "Sistema Internacional de Unidades", url: "https://www.bipm.org/en/measurement-units" },
+};
+
+const entries = [
+  { id: "stf", term: "STF", name: "Supremo Tribunal Federal", description: "Tribunal que julga questões constitucionais e aparece nas notícias sobre decisões de seus ministros.", category: "governo", sourceId: "justica" },
+  { id: "stj", term: "STJ", name: "Superior Tribunal de Justiça", description: "Tribunal que uniformiza a interpretação da legislação federal nos casos de sua competência.", category: "governo", sourceId: "justica" },
+  { id: "tse", term: "TSE", name: "Tribunal Superior Eleitoral", description: "Órgão superior da Justiça Eleitoral, responsável por atividades como a organização das eleições nacionais.", category: "governo", sourceId: "eleicoes" },
+  { id: "tre", term: "TRE", name: "Tribunal Regional Eleitoral", description: "Tribunal da Justiça Eleitoral de cada estado e do Distrito Federal. TRE-SP é o tribunal de São Paulo citado no recorte do News Brasil.", aliases: ["TRE-SP"], category: "governo", sourceId: "eleicoes" },
+  { id: "pgr", term: "PGR", name: "Procuradoria-Geral da República", description: "Designa a instituição e também, conforme o contexto, o cargo de procurador-geral da República.", category: "governo", sourceId: "procuradoria" },
+  { id: "mpf", term: "MPF", name: "Ministério Público Federal", description: "Instituição que atua na defesa da ordem jurídica e dos interesses sociais em assuntos de competência federal.", category: "governo", sourceId: "procuradoria" },
+  { id: "mp", term: "MP", name: "Medida Provisória ou Ministério Público", description: "Em normas, é uma medida provisória editada pelo presidente e submetida ao Congresso. Em notícias jurídicas, pode designar o Ministério Público. O contexto distingue os sentidos.", category: "governo", sourceId: "legislativo" },
+  { id: "pec", term: "PEC", name: "Proposta de Emenda à Constituição", description: "Proposta para modificar a Constituição. A sigla identifica uma proposta, sem indicar que a mudança já foi aprovada.", category: "governo", sourceId: "legislativo" },
+  { id: "pl", term: "PL", name: "Projeto de Lei ou Partido Liberal", description: "Em tramitação legislativa, significa projeto de lei. Junto ao nome de um político, pode indicar o Partido Liberal. Leia a frase para identificar o sentido.", category: "governo", sourceId: "legislativo" },
+  { id: "inss", term: "INSS", name: "Instituto Nacional do Seguro Social", description: "Autarquia responsável por serviços e benefícios previdenciários, como aposentadorias e pensões.", category: "governo", sourceId: "inss" },
+  { id: "ebc", term: "EBC", name: "Empresa Brasil de Comunicação", description: "Empresa pública de comunicação à qual pertencem serviços como a Agência Brasil.", category: "governo", sourceId: "ebc" },
+  { id: "dou", term: "DOU", name: "Diário Oficial da União", description: "Publicação oficial de atos federais. O texto do ato informa suas regras e a data em que entra em vigor.", category: "governo", sourceId: "dou" },
+  { id: "psol", term: "PSOL", name: "Partido Socialismo e Liberdade", description: "Sigla de partido político que pode aparecer em notícias sobre eleições e atuação parlamentar.", category: "governo", sourceId: "partidos" },
+  { id: "rede", term: "REDE", name: "Rede Sustentabilidade", description: "Nome e sigla partidária usados em notícias políticas; não designa uma rede de computadores nesse contexto.", aliases: ["Rede"], category: "governo", sourceId: "partidos" },
+  { id: "anvisa", term: "Anvisa", name: "Agência Nacional de Vigilância Sanitária", description: "Agência federal de regulação e vigilância sanitária, citada em normas sobre produtos e serviços sujeitos a esse controle.", category: "governo", sourceId: "anvisa" },
+  { id: "anatel", term: "Anatel", name: "Agência Nacional de Telecomunicações", description: "Agência federal que regula e fiscaliza o setor de telecomunicações.", category: "governo", sourceId: "anatel" },
+  { id: "anpd", term: "ANPD", name: "Agência Nacional de Proteção de Dados", description: "Órgão regulador de proteção de dados pessoais. Em documentos anteriores à mudança de nome, a mesma sigla pode significar Autoridade Nacional de Proteção de Dados.", category: "governo", sourceId: "anpd" },
+  { id: "cptec", term: "CPTEC", name: "Centro de Previsão de Tempo e Estudos Climáticos", description: "Centro do Instituto Nacional de Pesquisas Espaciais que produz previsões e estudos do tempo e do clima.", category: "clima", sourceId: "meteorologia" },
+  { id: "inpe", term: "INPE", name: "Instituto Nacional de Pesquisas Espaciais", description: "Instituto brasileiro de pesquisa espacial e ambiental ao qual pertence o CPTEC.", category: "clima", sourceId: "meteorologia" },
+  { id: "inmet", term: "INMET", name: "Instituto Nacional de Meteorologia", description: "Instituto brasileiro que fornece informações meteorológicas e avisos oficiais de tempo severo.", category: "clima", sourceId: "meteorologia" },
+  { id: "wmo", term: "WMO / OMM", name: "Organização Meteorológica Mundial", description: "WMO é a sigla em inglês de World Meteorological Organization; OMM é a forma em português. Seus padrões ajudam a organizar dados do tempo.", aliases: ["WMO", "OMM"], category: "clima", sourceId: "wmo" },
+  { id: "cape", term: "CAPE", name: "Energia potencial convectiva disponível", description: "Do inglês Convective Available Potential Energy. Mede a energia disponível para movimentos ascendentes do ar, em joules por quilograma; sozinha não confirma uma tempestade.", category: "clima", sourceId: "cape" },
+  { id: "uv", term: "UV", name: "Ultravioleta", description: "Faixa de radiação solar. No painel, o índice ultravioleta representa a intensidade dessa radiação na superfície.", category: "clima", sourceId: "inpe" },
+  { id: "iqa", term: "IQA / AQI", name: "Índice de Qualidade do Ar", description: "AQI significa Air Quality Index em inglês. A escala OpenWeather vai de 1 a 5; não equivale automaticamente ao índice oficial brasileiro.", aliases: ["IQA", "AQI"], category: "clima", sourceId: "ar" },
+  { id: "pm25", term: "PM2,5", name: "Material particulado fino", description: "Partículas no ar com diâmetro de até 2,5 micrômetros; o valor exibido é sua concentração.", aliases: ["PM2.5", "PM₂,₅", "PM₂.₅", "MP2,5"], category: "clima", sourceId: "ar" },
+  { id: "pm10", term: "PM10", name: "Material particulado inalável", description: "Partículas no ar com diâmetro de até 10 micrômetros. A concentração aparece na seção de qualidade do ar.", aliases: ["PM₁₀", "MP10"], category: "clima", sourceId: "ar" },
+  { id: "co", term: "CO", name: "Monóxido de carbono", description: "Gás cuja concentração é informada no painel de qualidade do ar.", category: "clima", sourceId: "ar" },
+  { id: "no", term: "NO", name: "Monóxido de nitrogênio", description: "Também chamado óxido nítrico. É um gás acompanhado na seção de qualidade do ar.", category: "clima", sourceId: "ar" },
+  { id: "no2", term: "NO2", name: "Dióxido de nitrogênio", description: "Gás acompanhado no painel de qualidade do ar.", aliases: ["NO₂"], category: "clima", sourceId: "ar" },
+  { id: "o3", term: "O3", name: "Ozônio", description: "Aqui se refere ao ozônio próximo ao solo, medido como concentração no ar.", aliases: ["O₃"], category: "clima", sourceId: "ar" },
+  { id: "so2", term: "SO2", name: "Dióxido de enxofre", description: "Fórmula química de um gás acompanhado no painel de qualidade do ar.", aliases: ["SO₂"], category: "clima", sourceId: "ar" },
+  { id: "nh3", term: "NH3", name: "Amônia", description: "Gás acompanhado no painel de qualidade do ar.", aliases: ["NH₃"], category: "clima", sourceId: "ar" },
+  { id: "nasa", term: "NASA", name: "Administração Nacional da Aeronáutica e Espaço", description: "Nome em português da agência espacial dos Estados Unidos, National Aeronautics and Space Administration.", category: "espaco", sourceId: "nasa" },
+  { id: "jpl", term: "JPL", name: "Laboratório de Propulsão a Jato", description: "Do inglês Jet Propulsion Laboratory. É o laboratório associado à NASA que disponibiliza os registros espaciais consultados pelo app.", category: "espaco", sourceId: "jpl" },
+  { id: "cneos", term: "CNEOS", name: "Centro de Estudos de Objetos Próximos da Terra", description: "Do inglês Center for Near Earth Object Studies. Mantém os dados de bolas de fogo exibidos no painel espacial.", category: "espaco", sourceId: "cneos" },
+  { id: "tnt", term: "TNT", name: "Trinitrotolueno", description: "Substância usada como referência para comparar energia. No painel espacial, a energia é expressa como equivalente em quilotons de TNT.", category: "espaco", sourceId: "energia" },
+  { id: "api", term: "API", name: "Interface de programação de aplicações", description: "Forma padronizada de um programa solicitar dados a outro serviço. O painel usa essas interfaces para consultar suas fontes.", category: "tecnologia", sourceId: "web" },
+  { id: "cors", term: "CORS", name: "Compartilhamento de recursos entre origens", description: "Do inglês Cross-Origin Resource Sharing. Mecanismo pelo qual um servidor permite que o navegador consulte seus recursos a partir de outro site. A falta dessa permissão pode impedir uma consulta do painel.", category: "tecnologia", sourceId: "cors" },
+  { id: "rss", term: "RSS", name: "Really Simple Syndication", description: "Formato de distribuição de atualizações de sites. O coletor consulta esses feeds para encontrar novas notícias.", category: "tecnologia", sourceId: "web" },
+  { id: "pwa", term: "PWA", name: "Aplicação Web Progressiva", description: "Do inglês Progressive Web App. Permite usar recursos como instalação do app e abertura de partes já armazenadas sem conexão.", category: "tecnologia", sourceId: "web" },
+  { id: "json", term: "JSON", name: "JavaScript Object Notation", description: "Formato de texto estruturado usado para transportar dados, como o catálogo de notícias carregado pelo painel.", category: "tecnologia", sourceId: "web" },
+  { id: "url", term: "URL", name: "Localizador Uniforme de Recursos", description: "Do inglês Uniform Resource Locator. É o endereço de uma página, arquivo ou serviço na internet.", category: "tecnologia", sourceId: "web" },
+  { id: "http", term: "HTTP", name: "Protocolo de Transferência de Hipertexto", description: "Do inglês Hypertext Transfer Protocol. Define a comunicação na web; um erro HTTP informa que uma consulta recebeu uma resposta de falha.", category: "tecnologia", sourceId: "web" },
+  { id: "https", term: "HTTPS", name: "Protocolo de Transferência de Hipertexto Seguro", description: "Protege a conexão entre navegador e servidor. O endereço começar com HTTPS não comprova que o conteúdo publicado é verdadeiro.", category: "tecnologia", sourceId: "web" },
+  { id: "utc", term: "UTC", name: "Tempo Universal Coordenado", description: "Referência mundial de horário. O painel converte os horários para o local indicado quando a fonte informa o fuso.", category: "medidas", sourceId: "web" },
+  { id: "cep", term: "CEP", name: "Código de Endereçamento Postal", description: "Código dos Correios usado para identificar uma área de entrega no Brasil e auxiliar a busca de localidades.", category: "medidas", sourceId: "cep" },
+  { id: "br", term: "BR", name: "Brasil", description: "Código de país usado na busca de localização. Por exemplo, Marília,BR procura a cidade no Brasil.", category: "medidas", sourceId: "geocodificacao" },
+  { id: "us", term: "US", name: "Estados Unidos", description: "Código de país usado na busca de localização, como no exemplo de código postal 10001,US.", category: "medidas", sourceId: "geocodificacao" },
+  { id: "sp", term: "SP", name: "São Paulo", description: "Sigla do estado de São Paulo. Marília-SP indica a cidade de Marília nesse estado.", category: "medidas", sourceId: "geocodificacao" },
+  { id: "uf", term: "UF", name: "Unidade da Federação", description: "Designa um estado brasileiro ou o Distrito Federal; SP, por exemplo, identifica São Paulo.", category: "medidas", sourceId: "geocodificacao" },
+  { id: "temp", term: "Temp.", name: "Temperatura", description: "Abreviação no cabeçalho da tabela de previsão. Os valores do painel são apresentados em graus Celsius.", category: "clima", sourceId: "unidades" },
+  { id: "graus", term: "°", name: "Grau angular", description: "Na direção do vento, expressa um ângulo. Com a letra C, forma °C, símbolo de temperatura em graus Celsius.", aliases: ["graus"], category: "medidas", sourceId: "unidades" },
+  { id: "h", term: "h", name: "Hora", description: "Unidade de tempo: 3h indica três horas; 24h indica vinte e quatro horas.", category: "medidas", sourceId: "unidades" },
+  { id: "min", term: "min", name: "Minuto", description: "Unidade de tempo equivalente a sessenta segundos. Aparece na idade de notícias e nos intervalos de atualização.", category: "medidas", sourceId: "unidades" },
+  { id: "celsius", term: "°C", name: "Graus Celsius", description: "Unidade usada no painel para informar temperatura e sensação térmica. No seletor de mapas, aparece abreviada como C.", aliases: ["Celsius", "grau Celsius", "C"], category: "medidas", sourceId: "unidades" },
+  { id: "porcentagem", term: "%", name: "Porcentagem", description: "Representa uma quantidade em cada cem. No painel, acompanha valores como umidade, cobertura de nuvens e probabilidade de chuva; cada indicador tem seu próprio significado.", category: "medidas", sourceId: "unidades" },
+  { id: "hpa", term: "hPa", name: "Hectopascal", description: "Unidade de pressão atmosférica; um hectopascal corresponde a 100 pascals.", category: "medidas", sourceId: "inpe" },
+  { id: "jkg", term: "J/kg", name: "Joules por quilograma", description: "Unidade de energia por massa usada para apresentar a energia potencial convectiva disponível, identificada como CAPE.", category: "medidas", sourceId: "cape" },
+  { id: "kmh", term: "km/h", name: "Quilômetros por hora", description: "Unidade de velocidade usada para vento e rajadas no painel meteorológico.", category: "medidas", sourceId: "unidades" },
+  { id: "ms", term: "m/s", name: "Metros por segundo", description: "Unidade de velocidade da camada de vento nos mapas OpenWeather. Um metro por segundo equivale a 3,6 quilômetros por hora.", category: "medidas", sourceId: "unidades" },
+  { id: "km", term: "km", name: "Quilômetro", description: "Unidade de distância equivalente a mil metros. Aparece, por exemplo, na altitude de bolas de fogo.", category: "medidas", sourceId: "unidades" },
+  { id: "mm", term: "mm", name: "Milímetro", description: "Na precipitação, informa a altura de água acumulada no intervalo indicado: um milímetro equivale a um litro por metro quadrado.", category: "medidas", sourceId: "unidades" },
+  { id: "m", term: "m", name: "Metro", description: "Unidade de distância usada, por exemplo, na visibilidade informada pela OpenWeather.", category: "medidas", sourceId: "unidades" },
+  { id: "ugm3", term: "µg/m³", name: "Microgramas por metro cúbico", description: "Unidade de concentração: quantidade de uma substância em determinado volume de ar.", aliases: ["μg/m³", "ug/m3", "µg/m3", "μg/m3"], category: "medidas", sourceId: "ar" },
+  { id: "kt", term: "kt", name: "Quiloton de TNT equivalente", description: "No painel de bolas de fogo, expressa energia equivalente a mil toneladas de TNT; aqui não significa nós, a unidade de velocidade.", category: "medidas", sourceId: "energia" },
+];
+
+export const GLOSSARY_ENTRIES = entries.sort((left, right) => left.term.localeCompare(right.term, "pt-BR", { numeric: true, sensitivity: "base" }));
+
+export function normalizeGlossarySearch(value) {
+  return String(value ?? "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR").replace(/[µμ]/g, "u").replace(/,/g, ".").trim();
+}
+
+export function filterGlossaryEntries(entries = GLOSSARY_ENTRIES, { query = "", category = "todas" } = {}) {
+  const term = normalizeGlossarySearch(query);
+  const isExact = (entry) => Boolean(term) && [entry.term, ...(entry.aliases ?? [])].some((value) => normalizeGlossarySearch(value) === term);
+  return entries.filter((entry) => (category === "todas" || entry.category === category)
+    && (!term || normalizeGlossarySearch([entry.term, entry.name, entry.description, ...(entry.aliases ?? [])].join(" ")).includes(term)))
+    .sort((left, right) => Number(isExact(right)) - Number(isExact(left)) || left.term.localeCompare(right.term, "pt-BR", { numeric: true, sensitivity: "base" }));
+}

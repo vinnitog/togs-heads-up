@@ -31,5 +31,5 @@ test("main menu exposes News Brasil and only mounts its independent screen when 
   const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   assert.match(app, /id: "news-brasil", label: "News Brasil"/);
   assert.match(app, /activeView === "news-brasil" && <BrasilNewsScreen\s*\/>/);
-  assert.match(app, /activeView === "news-brasil" \? null : activeView === "openweather"/);
+  assert.match(app, /activeView === "news-brasil" \? null : activeView === "glossary" \? null : activeView === "openweather"/);
 });

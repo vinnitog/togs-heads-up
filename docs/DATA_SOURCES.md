@@ -1,5 +1,11 @@
 # Fontes de dados do painel
 
+## Glossário
+
+O menu **Glossário** reúne siglas, abreviações e unidades usadas nos painéis e nas notícias conhecidas, com nome por extenso, explicação em português e referência para consulta. O catálogo local fica em `src/data/glossary.js`; não depende de chamadas externas para carregar ou pesquisar e integra o shell offline do app. Os links de referência só são acessados ao abri-los.
+
+As explicações usam fontes institucionais, como o glossário do Congresso e do Senado, páginas dos órgãos, documentação OpenWeather, NASA/JPL/CNEOS e referências técnicas. Siglas com mais de um sentido, como MP e PL, precisam ser lidas no contexto da notícia. O catálogo não interpreta automaticamente siglas novas de feeds futuros; novas entradas devem ser revisadas e adicionadas ao catálogo. O significado de uma sigla não confirma a vigência de uma medida nem substitui a consulta ao texto original.
+
 ## News Brasil
 
 O menu acompanha notícias sobre atos federais do Executivo, Legislativo e Judiciário desde **25/10/2026**, data da reeleição presidencial confirmada pela [Justiça Eleitoral / TRE-SP](https://www.tre-sp.jus.br/comunicacao/noticias/2026/Outubro/eleicoes-2026-lula-e-reeleito-presidente-da-republica-confira-resultado-do-2o-turno-em-sp). O recorte inclui o dia da eleição no fuso de Brasília; não corresponde ao início do mandato seguinte.
@@ -75,4 +81,4 @@ A classificação serve para organizar a leitura do dashboard. Em situação de 
 | [ANA / HidroWebservice](https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos/monitoramento-hidrologico/orientacoes-manuais/manuais-de-sistemas-e-servicos-de-disponibilizacao-de-dados-hidrologicos) | níveis, vazões e chuva de estações hidrológicas | selecionar estações relevantes para Marília e validar limites, formato e atualização |
 | Defesa Civil | alertas e recomendações locais | integrar somente por feed/API oficial ou canal redistribuível documentado |
 
-Fontes sem CORS ou que exijam segredo inacessível ao navegador precisam de um backend/adaptador controlado. A integração OpenWeather deste app estático usa automaticamente a chave compartilhada do projeto, diretamente nos domínios oficiais, sem proxy público. No desenvolvimento, `.env.development.local` fornece `VITE_OPENWEATHER_API_KEY`. No GitHub Pages, o secret `OPENWEATHER_API_KEY` é injetado como `VITE_OPENWEATHER_API_KEY` no build. A chave real não é versionada, mas integra o JavaScript público e o cache do shell PWA `togs-heads-up-v18`; fica visível no navegador. O visitante não informa chave e o app ignora a configuração antiga em `sessionStorage`. As requisições à OpenStreetMap não recebem a chave. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.
+Fontes sem CORS ou que exijam segredo inacessível ao navegador precisam de um backend/adaptador controlado. A integração OpenWeather deste app estático usa automaticamente a chave compartilhada do projeto, diretamente nos domínios oficiais, sem proxy público. No desenvolvimento, `.env.development.local` fornece `VITE_OPENWEATHER_API_KEY`. No GitHub Pages, o secret `OPENWEATHER_API_KEY` é injetado como `VITE_OPENWEATHER_API_KEY` no build. A chave real não é versionada, mas integra o JavaScript público e o cache do shell PWA `togs-heads-up-v19`; fica visível no navegador. O visitante não informa chave e o app ignora a configuração antiga em `sessionStorage`. As requisições à OpenStreetMap não recebem a chave. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.

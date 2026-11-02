@@ -15,7 +15,7 @@
 | CPTEC — `togs-cache:v5:cptec:*` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
 | Fireballs — `togs-cache:v5:fireballs:global` | fresco por 3 h; fallback até 24 h | remoção física na primeira carga posterior a 24 h | legítimo interesse; desempenho/resiliência |
 | Namespaces antigos/malformados `togs-cache:*` | nenhum | removidos na próxima carga do dashboard | minimização e qualidade |
-| Shell PWA `togs-heads-up-v18`, incluindo JavaScript com chave OpenWeather do projeto | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
+| Shell PWA `togs-heads-up-v19`, incluindo JavaScript com chave OpenWeather do projeto | até nova versão/limpeza | versão anterior removida após instalação segura da nova | funcionalidade offline |
 | Shell legado `togs-heads-up-v12` | migração do antigo escopo `/Togs-heads-up/` | preservado até limpeza/reinstalação do navegador para não quebrar a PWA antiga | continuidade offline durante o rename |
 | Notícias/alertas | sessão | descartados ao fechar/recarregar | exibição de fontes públicas |
 | Chave OpenWeather do projeto — configuração local/GitHub Secret e JavaScript publicado | configuração até remoção/rotação; cópias no shell até atualização/limpeza | nova configuração requer novo build; chave publicada permanece nas cópias existentes até substituição/limpeza | integração automática; avaliação A004 pendente |

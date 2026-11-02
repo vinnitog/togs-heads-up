@@ -1,0 +1,158 @@
+.glossary-screen {
+  min-width: 0;
+}
+
+.glossary-intro,
+.glossary-context {
+  color: #475467;
+  line-height: 1.65;
+}
+
+.glossary-intro {
+  margin: 6px 0 0;
+}
+
+.glossary-context {
+  max-width: 75ch;
+  margin: 20px 0;
+}
+
+.glossary-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.glossary-filters label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.glossary-filters input,
+.glossary-filters select,
+.glossary-clear {
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+
+/* [UI] Controles legíveis a 16px evitam zoom automático ao focar no celular. */
+.glossary-filters input,
+.glossary-filters select {
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.glossary-filters input::placeholder {
+  color: #475467;
+  opacity: 1;
+}
+
+.glossary-clear {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--surface-muted);
+}
+
+.glossary-clear:hover {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+
+.glossary-count {
+  margin: 18px 0 0;
+  color: #475467;
+  font-size: 0.9rem;
+}
+
+.glossary-list {
+  margin: 0;
+}
+
+.glossary-entry {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.3fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.glossary-entry:last-child {
+  border-bottom: 0;
+}
+
+.glossary-entry dt {
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.glossary-entry dt span {
+  display: block;
+  margin-top: 5px;
+  color: #475467;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.glossary-entry dd {
+  min-width: 0;
+  margin: 0;
+  max-width: 75ch;
+  line-height: 1.65;
+}
+
+/* [UI] A hierarquia do termo prevalece sobre o estilo genérico de seções. */
+.glossary-entry dd h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.glossary-entry p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.glossary-entry a {
+  display: inline-block;
+  min-height: 44px;
+  padding: 6px 0;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.glossary-screen :is(a, button, input, select):focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .glossary-filters,
+  .glossary-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .glossary-entry {
+    gap: 10px;
+  }
+
+  .glossary-clear {
+    justify-self: start;
+  }
+}
