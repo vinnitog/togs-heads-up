@@ -89,7 +89,7 @@
 | Dados | Assets estáticos, incluindo JavaScript com chave OpenWeather do projeto; timestamps técnicos; clima/localidade de cidade pesquisada; registros públicos de bolas de fogo. Coordenadas `geo-*` são excluídas do armazenamento persistente; respostas OpenWeather ficam só em memória. |
 | Sensíveis? | Não. |
 | Fonte | Respostas públicas já processadas no navegador. |
-| Sistemas | Cache Storage atual `togs-heads-up-v17`, incluindo JavaScript com a chave do projeto; cache legado `togs-heads-up-v12` preservado para a instalação do escopo antigo; `localStorage` sob `togs-cache:v5:`. Respostas OpenWeather em memória, sem gravação no `localStorage` ou Cache Storage. Valores antigos da chave em `sessionStorage` são ignorados. |
+| Sistemas | Cache Storage atual `togs-heads-up-v18`, incluindo JavaScript com a chave do projeto; cache legado `togs-heads-up-v12` preservado para a instalação do escopo antigo; `localStorage` sob `togs-cache:v5:`. Respostas OpenWeather em memória, sem gravação no `localStorage` ou Cache Storage. Valores antigos da chave em `sessionStorage` são ignorados. |
 | Operadores/terceiros | Nenhum novo compartilhamento; armazenamento fica no dispositivo do titular. |
 | Transferência internacional | Não causada pelo armazenamento local. |
 | Retenção no app | Cache Storage permanece até atualização/limpeza do navegador; caches obsoletos do escopo atual são removidos na ativação, enquanto a v12 do escopo antigo é preservada durante a migração. `localStorage`: TTL operacional de 15 min/3 h, fallback de até 24 h e remoção física de entradas expiradas/legadas na próxima carga. |
@@ -140,7 +140,7 @@
 | `togs-cache:v5:weather:{lat},{lng}` | Resposta de clima + localidade pesquisada | 15 min; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v5:cptec:{lat},{lng}` | Previsão pública CPTEC | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não para IDs `geo-*` |
 | `togs-cache:v5:fireballs:global` | Eventos públicos NASA/JPL | 3 h; fallback até 24 h; remoção na primeira carga posterior | Não |
-| `togs-heads-up-v17` | Shell do escopo atual `/togs-heads-up/`, incluindo JavaScript com a chave do projeto | Até atualização/limpeza do navegador | Não |
+| `togs-heads-up-v18` | Shell do escopo atual `/togs-heads-up/`, incluindo JavaScript com a chave do projeto | Até atualização/limpeza do navegador | Não |
 | `togs-heads-up-v12` | Shell legado do escopo `/Togs-heads-up/` | Preservado durante a migração; até limpeza/reinstalação do navegador | Não |
 | Configuração OpenWeather | Chave do projeto em arquivo local ignorado pelo Git e GitHub Secret `OPENWEATHER_API_KEY`; injetada como `VITE_OPENWEATHER_API_KEY` no build e visível no JavaScript público | Configuração até remoção/rotação; cópias no shell até atualização/limpeza | Não |
 | Memória: cache OpenWeather | Respostas autenticadas, URLs de consulta e chave | TTL lógico de 10 min; até 80 entradas; limpo na atualização/recarregamento | Sim, apenas em memória durante a sessão |

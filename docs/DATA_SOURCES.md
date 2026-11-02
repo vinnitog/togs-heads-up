@@ -1,4 +1,29 @@
-# Fontes meteorológicas e de risco
+# Fontes de dados do painel
+
+## News Brasil
+
+O menu acompanha notícias sobre atos federais do Executivo, Legislativo e Judiciário desde **25/10/2026**, data da reeleição presidencial confirmada pela [Justiça Eleitoral / TRE-SP](https://www.tre-sp.jus.br/comunicacao/noticias/2026/Outubro/eleicoes-2026-lula-e-reeleito-presidente-da-republica-confira-resultado-do-2o-turno-em-sp). O recorte inclui o dia da eleição no fuso de Brasília; não corresponde ao início do mandato seguinte.
+
+O catálogo de fontes fica em `src/services/brasilNews.js`. A seleção separa portais institucionais, imprensa pública e veículos de imprensa com redação identificável e feed próprio. Cada notícia precisa vir do feed cadastrado e ter URL HTTPS em um dos domínios exatos da respectiva fonte. Links de agregadores, domínios desconhecidos, credenciais em URLs e datas ausentes, anteriores ao recorte ou futuras além de cinco minutos de tolerância de relógio são rejeitados. A conferência é de **procedência**, não uma checagem independente de cada alegação.
+
+| Fonte selecionada | Origem | Escopo do feed |
+|---|---|---|
+| [Agência Câmara](https://www.camara.leg.br/noticias/rss/) | portal oficial do Legislativo | últimas notícias da Câmara |
+| [Agência Senado](https://www12.senado.leg.br/noticias/rss.xml) | portal oficial do Legislativo | notícias do Senado |
+| [Agência Gov](https://agenciagov.ebc.com.br/@@RSS) | comunicação governamental / EBC | notícias do Executivo e ministérios |
+| [STF](https://noticias.stf.jus.br/feed/?post_type=postsnoticias) | portal oficial do Judiciário | notícias do Supremo; o feed genérico contém páginas institucionais |
+| [STJ](https://www.stj.jus.br/sites/portalp/Paginas/RSS.aspx) | portal oficial do Judiciário | notícias do Superior Tribunal de Justiça |
+| [Agência Brasil](https://agenciabrasil.ebc.com.br/rss/politica/feed.xml) | imprensa pública / EBC | editoria Política |
+| [g1](https://g1.globo.com/rss/g1/politica/) | imprensa / Grupo Globo | editoria Política |
+| [Folha de S.Paulo](https://feeds.folha.uol.com.br/poder/rss091.xml) | imprensa / Grupo Folha | editoria Poder; colunas excluídas |
+
+Os endpoints foram consultados com sucesso na coleta inicial. A disponibilidade futura é registrada a cada tentativa. A seleção de veículos identifica a redação responsável e usa o feed do próprio editor; não equivale a endosso editorial nem certificação de isenção.
+
+As categorias “Proposta / tramitação”, “Ato noticiado”, “Decisão noticiada” e “Acompanhamento” são inferidas do título e podem conter erros. Aprovação em comissão ou em uma Casa não confirma sanção, publicação ou vigência. Confira o texto original, a tramitação e, quando aplicável, o [Diário Oficial da União](https://www.in.gov.br/consulta) e a [Legislação do Planalto](https://www.planalto.gov.br/ccivil_03/).
+
+`node scripts/collect-brasil-news.mjs` consulta os feeds no Node, sem proxy público, e atualiza `public/data/news-brasil.json`. O navegador consulta somente esse JSON da própria hospedagem, ao abrir a tela, a cada cinco minutos enquanto ela estiver aberta e pelo botão “Atualizar painel”. O botão não dispara uma coleta nos portais. A rotina de publicação tem agenda de 30 minutos no GitHub Actions; agendas podem atrasar. A publicação agendada só entra em funcionamento depois do merge em `main` e exige Actions/Pages ativos e a configuração de build já existente.
+
+O JSON registra a última tentativa de coleta e o último sucesso por fonte. Falhas isoladas preservam os registros anteriores, sem marcá-los como novos. A tela sinaliza falha total e coleta com mais de 90 minutos. O histórico é acumulado por URL canônica e restaurado pelo cache do Actions, separado por branch; a cópia versionada serve de ponto inicial. Expiração/remoção do cache pode perder registros acumulados após esse ponto. Não há garantia de cobertura completa: RSS costuma conter apenas notícias recentes, filtros por título podem omitir matérias e o histórico anterior à primeira coleta não é reconstruído automaticamente. Manchetes e metadados são exibidos com atribuição e link; o app não republica o texto integral.
 
 O Togs Heads Up é um dashboard informativo para o Brasil, com foco inicial em Marília-SP. Ele não substitui orientações da Defesa Civil, do INMET ou de outros órgãos públicos.
 
@@ -50,4 +75,4 @@ A classificação serve para organizar a leitura do dashboard. Em situação de 
 | [ANA / HidroWebservice](https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos/monitoramento-hidrologico/orientacoes-manuais/manuais-de-sistemas-e-servicos-de-disponibilizacao-de-dados-hidrologicos) | níveis, vazões e chuva de estações hidrológicas | selecionar estações relevantes para Marília e validar limites, formato e atualização |
 | Defesa Civil | alertas e recomendações locais | integrar somente por feed/API oficial ou canal redistribuível documentado |
 
-Fontes sem CORS ou que exijam segredo inacessível ao navegador precisam de um backend/adaptador controlado. A integração OpenWeather deste app estático usa automaticamente a chave compartilhada do projeto, diretamente nos domínios oficiais, sem proxy público. No desenvolvimento, `.env.development.local` fornece `VITE_OPENWEATHER_API_KEY`. No GitHub Pages, o secret `OPENWEATHER_API_KEY` é injetado como `VITE_OPENWEATHER_API_KEY` no build. A chave real não é versionada, mas integra o JavaScript público e o cache do shell PWA `togs-heads-up-v17`; fica visível no navegador. O visitante não informa chave e o app ignora a configuração antiga em `sessionStorage`. As requisições à OpenStreetMap não recebem a chave. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.
+Fontes sem CORS ou que exijam segredo inacessível ao navegador precisam de um backend/adaptador controlado. A integração OpenWeather deste app estático usa automaticamente a chave compartilhada do projeto, diretamente nos domínios oficiais, sem proxy público. No desenvolvimento, `.env.development.local` fornece `VITE_OPENWEATHER_API_KEY`. No GitHub Pages, o secret `OPENWEATHER_API_KEY` é injetado como `VITE_OPENWEATHER_API_KEY` no build. A chave real não é versionada, mas integra o JavaScript público e o cache do shell PWA `togs-heads-up-v18`; fica visível no navegador. O visitante não informa chave e o app ignora a configuração antiga em `sessionStorage`. As requisições à OpenStreetMap não recebem a chave. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.

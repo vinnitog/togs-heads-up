@@ -148,7 +148,7 @@ test("LGPD checkpoint keeps L9 as an unpublished draft and L10 not started", () 
   }
 });
 
-test("cache versions v5 and v17 stay coherent between code and LGPD drafts", () => {
+test("cache versions v5 and v18 stay coherent between code and LGPD drafts", () => {
   const api = read("src/services/earthSpaceApi.js");
   const serviceWorker = read("public/sw.js");
   const versionedDrafts = [
@@ -158,12 +158,12 @@ test("cache versions v5 and v17 stay coherent between code and LGPD drafts", () 
   ];
 
   assert.match(api, /CACHE_PREFIX = `\$\{CACHE_NAMESPACE\}v5:`/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v17`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v18`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   for (const file of versionedDrafts) {
     const content = read(file);
     assert.match(content, /togs-cache:v5:/, `${file} must document localStorage v5`);
-    assert.match(content, /togs-heads-up-v17/, `${file} must document Cache Storage v17`);
+    assert.match(content, /togs-heads-up-v18/, `${file} must document Cache Storage v18`);
     assert.match(content, /togs-heads-up-v12/, `${file} must document the preserved legacy-scope v12 cache`);
     assert.doesNotMatch(content, /togs-cache:v3:/, `${file} must not document stale localStorage versions`);
   }
@@ -213,7 +213,7 @@ test("github pages deployment builds vite output for repository subpath", () => 
   assert.match(manifest, /"start_url": "\.\/"/);
   assert.match(manifest, /"scope": "\.\/"/);
   assert.match(serviceWorker, /CACHE_PREFIX = "togs-heads-up-"/);
-  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v17`/);
+  assert.match(serviceWorker, /CACHE_NAME = `\$\{CACHE_PREFIX\}v18`/);
   assert.match(serviceWorker, /LEGACY_SCOPE_CACHE_NAME = `\$\{CACHE_PREFIX\}v12`/);
   assert.match(serviceWorker, /application\/json/);
   assert.match(serviceWorker, /application\/xml/);

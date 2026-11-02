@@ -52,6 +52,7 @@ import {
 import { formatAge, getIncidentAgeMinutes, sortIncidentsByOccurredAt } from "./utils/incidents.js";
 import { assessHourlyWeatherRisk } from "./utils/weatherRisk.js";
 import OpenWeatherScreen from "./components/OpenWeatherScreen.jsx";
+import BrasilNewsScreen from "./components/BrasilNewsScreen.jsx";
 import { clearOpenWeatherCache, fetchOpenWeatherDashboard, reverseOpenWeatherLocation } from "./services/openWeatherApi.js";
 import { readOpenWeatherKey } from "./services/openWeatherSettings.js";
 import { formatOpenWeatherValue } from "./utils/openWeatherDisplay.js";
@@ -82,6 +83,7 @@ const VIEW_GROUPS = [
       { id: "weather", label: "Open-Meteo", icon: CloudSun },
       { id: "cptec", label: "CPTEC/INPE", icon: CloudRain },
       { id: "local", label: "Notícias locais", icon: Newspaper },
+      { id: "news-brasil", label: "News Brasil", icon: Newspaper },
     ],
   },
   {
@@ -461,7 +463,7 @@ function App() {
         </nav>
 
         <section className="screen-shell" id="dashboard-content" tabIndex="-1">
-          {activeView === "openweather" ? <header className="screen-heading"><div><h2>OpenWeather</h2><p className="screen-kicker">Clima, previsão e qualidade do ar</p></div></header> : <ScreenHeading
+          {activeView === "news-brasil" ? null : activeView === "openweather" ? <header className="screen-heading"><div><h2>OpenWeather</h2><p className="screen-kicker">Clima, previsão e qualidade do ar</p></div></header> : <ScreenHeading
             view={currentView}
             activeView={activeView}
             dashboard={dashboard}
@@ -487,6 +489,7 @@ function App() {
           )}
           {activeView === "cptec" && <CptecScreen cptec={dashboard.cptec} location={location} />}
           {activeView === "local" && <LocalNewsScreen localFeed={localFeed} isLoading={isLocalLoading} />}
+          {activeView === "news-brasil" && <BrasilNewsScreen />}
           {activeView === "fireballs" && <FireballScreen fireballs={dashboard.fireballs} />}
           {activeView === "sources" && <><SourcesScreen dashboard={dashboard} localFeed={localFeed} /><SourceGroup title="OpenWeather" sources={openWeather?.sources ?? [{ id: "openweather", label: "OpenWeather", state: openWeatherLoading ? "pendente" : "indisponivel", detail: openWeatherError || (openWeatherKey ? "Aguardando consulta" : "OpenWeather temporariamente indisponível nesta versão.") }]} /></>}
         </section>

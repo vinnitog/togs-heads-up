@@ -1,0 +1,237 @@
+.brasil-news {
+  min-width: 0;
+}
+
+.brasil-news-intro {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.brasil-news .screen-heading {
+  flex-wrap: wrap;
+}
+
+.brasil-news-context {
+  max-width: 75ch;
+  margin: 20px 0;
+  line-height: 1.6;
+}
+
+.brasil-news-context p {
+  margin: 8px 0;
+}
+
+.brasil-news-note,
+.brasil-news-provenance p {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+/* [UI] As ações usam superfície clara; o ghost da topbar tem texto branco. */
+.brasil-news .ghost-button {
+  color: var(--ink);
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
+}
+
+.brasil-news .ghost-button:hover:not(:disabled) {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+
+.brasil-news a {
+  color: #1d4ed8;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.brasil-news-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.brasil-news-filters label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.brasil-news-search {
+  grid-column: 1 / -1;
+}
+
+.brasil-news-filters input,
+.brasil-news-filters select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  /* [UI] Contorno identificável mesmo sem foco no campo. */
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.brasil-news input::placeholder {
+  color: #475467;
+  opacity: 1;
+}
+
+.brasil-news-results {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.brasil-news-results p {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.brasil-news-article {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.brasil-news-article:last-child {
+  border-bottom: 0;
+}
+
+.brasil-news-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  color: #475467;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.brasil-news-origin {
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--surface-muted);
+  font-weight: 700;
+}
+
+.brasil-news-origin.oficial {
+  color: #115e59;
+  background: #ccfbf1;
+}
+
+.brasil-news-origin.imprensa-publica {
+  color: #1e40af;
+  background: #dbeafe;
+}
+
+.brasil-news-article h3 {
+  max-width: 65ch;
+  margin: 10px 0 8px;
+  line-height: 1.5;
+  font-size: 1.05rem;
+}
+
+.brasil-news-article h3 a {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+}
+
+.brasil-news-article h3 a:hover {
+  color: #1d4ed8;
+}
+
+.brasil-news-byline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.brasil-news-more {
+  margin-top: 16px;
+}
+
+.brasil-news-provenance {
+  margin-top: 18px;
+}
+
+.brasil-news-provenance summary {
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.brasil-news-sources {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.brasil-news-sources li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.brasil-news-sources li > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.brasil-news-source-type {
+  color: #475467;
+  font-size: 0.8rem;
+}
+
+.brasil-news-sources p {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.brasil-news-provenance > p {
+  max-width: 75ch;
+}
+
+.brasil-news button {
+  min-height: 44px;
+  white-space: normal;
+}
+
+.brasil-news button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.brasil-news :is(a, button, input, select, summary):focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .brasil-news-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brasil-news .screen-heading {
+    gap: 12px;
+  }
+
+  .brasil-news-results {
+    align-items: flex-start;
+  }
+}

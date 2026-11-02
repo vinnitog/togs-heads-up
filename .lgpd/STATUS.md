@@ -52,7 +52,7 @@ Em 11/09/2026, atualizados inventário, bases pretendidas, retenção e minuta p
 
 - Respostas OpenWeather em memória com validade de dez minutos. A chave compartilhada é configurada no GitHub Secret `OPENWEATHER_API_KEY` e injetada como `VITE_OPENWEATHER_API_KEY` no build; integra o JavaScript público e o cache do shell. Não há coleta de chave do visitante; valores antigos em `sessionStorage` são ignorados.
 - Tiles OpenWeather/OpenStreetMap somente ao abrir mapas; posição opcional continua sem persistência no armazenamento do app.
-- Shell atualizado para `togs-heads-up-v17`, com v12 legado preservado. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.
+- Shell atualizado para `togs-heads-up-v18`, com v12 legado preservado. Respostas autenticadas e tiles externos continuam fora do Cache Storage do app.
 - Pendente: atualizar LIAs A002–A004 e auditar termos, papéis, retenção e países dos novos destinatários. Os artefatos históricos L4 não cobrem automaticamente esses terceiros.
 - Minuta de privacidade continua não publicada; permanecem as pendências anteriores de controlador, canal e revisão jurídica. Este delta não declara conformidade.
 

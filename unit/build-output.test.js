@@ -69,6 +69,10 @@ test("real production build emits only resolvable lowercase app paths", async (t
   const serviceWorkerPath = path.join(outputDirectory, "sw.js");
   assert.ok(fs.existsSync(serviceWorkerPath));
 
+  const newsPath = path.join(outputDirectory, "data", "news-brasil.json");
+  assert.ok(fs.existsSync(newsPath), "the same-origin news catalog must ship with Pages output");
+  assert.deepEqual(JSON.parse(fs.readFileSync(newsPath, "utf8")), JSON.parse(fs.readFileSync(path.join(ROOT, "public/data/news-brasil.json"), "utf8")));
+
   const functionalOutput = listFiles(outputDirectory)
     .filter((file) => /\.(?:html|js|css|webmanifest|svg)$/i.test(file))
     .map((file) => {
